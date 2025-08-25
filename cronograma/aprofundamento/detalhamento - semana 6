@@ -1,0 +1,61 @@
+# 📚 Semana 6 – RPG Base
+
+### 🎯 Objetivo da semana
+- [ ] Evoluir do protótipo de cubos para **personagens animados**
+- [ ] Criar HUD básico com vida, mana e nome do player
+- [ ] Implementar **combate simples** entre jogadores
+- [ ] Sincronizar animações e atributos pela rede
+
+---
+
+## **Dia 1 – Substituindo Cubos por Personagens**
+- [ ] Carregar modelo `.glb` ou `.j3o` com esqueleto de animação
+- [ ] Usar `AnimComposer` para idle e walk
+- [ ] Exercício: player em idle parado, animado ao andar
+
+---
+
+## **Dia 2 – Sincronização de Animações pela Rede**
+- [ ] Cliente envia estado de animação atual (idle/walk)
+- [ ] Servidor retransmite para todos os clientes
+- [ ] Exercício: Player A anda → Player B vê animação “walk”
+
+---
+
+## **Dia 3 – HUD Inicial (Vida, Mana, Nome)**
+- [ ] Criar HUD com `BitmapText` ou Lemur UI
+- [ ] Exibir vida, mana e nome sobre o player
+- [ ] Atualizar valores em tempo real no HUD
+- [ ] Exercício: player perde mana ao pular
+
+---
+
+## **Dia 4 – Combate Básico**
+- [ ] Implementar ataque simples (tecla espaço → “hit”)
+- [ ] Servidor aplica dano no alvo
+- [ ] Cliente exibe feedback (vida reduzida no HUD)
+- [ ] Exercício: Player A ataca Player B → HUD de B mostra vida menor
+
+---
+
+## **Dia 5 – Feedback Visual de Combate**
+- [ ] Adicionar partículas simples ao ataque
+- [ ] Tocar som de impacto (`AudioNode`)
+- [ ] Alterar cor da barra de vida ao sofrer dano
+- [ ] Exercício: atacar → efeito visual + som + vida reduzida
+
+---
+
+## **Dia 6 – Modularização (AppStates do RPG)**
+- [ ] Criar `PlayerAppState` (movimento e animação)
+- [ ] Criar `CombatAppState` (ataques e vida)
+- [ ] Criar `UIAppState` (HUD)
+- [ ] Exercício: manter lógica separada em AppStates distintos
+
+---
+
+## **Dia 7 – Mini-projeto: RPG Base Online**
+- [ ] Player animado em idle/walk sincronizado
+- [ ] HUD mostrando vida, mana e nome
+- [ ] Combate simples entre dois players conectados
+- [ ] Resultado esperado: **RPG básico multiplayer rodando**

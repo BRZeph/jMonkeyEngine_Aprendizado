@@ -1,0 +1,64 @@
+# 📚 Semana 8 – Protótipo Multiplayer de RPG
+
+### 🎯 Objetivo da semana
+- [ ] Integrar terreno, players, NPCs, combate, inventário e HUD
+- [ ] Adicionar partículas e sons para imersão
+- [ ] Testar em sessão multiplayer com 2+ jogadores
+- [ ] Entregar protótipo jogável de RPG online
+
+---
+
+## **Dia 1 – Login e Entrada no Mundo**
+- [ ] Criar sistema simples de login (nickname)
+- [ ] Servidor gera id único para cada player
+- [ ] Player aparece no mapa ao conectar
+- [ ] Exercício: 2 jogadores logam e aparecem no terreno
+
+---
+
+## **Dia 2 – Sincronização Completa de Players**
+- [ ] Sincronizar movimento, animações e status (vida/mana)
+- [ ] HUD exibe valores corretos para cada player
+- [ ] Exercício: players se movem e veem status uns dos outros
+
+---
+
+## **Dia 3 – Interações Básicas (Combate + Coleta)**
+- [ ] Players atacam uns aos outros e HUD mostra dano
+- [ ] Players coletam itens → inventário é atualizado
+- [ ] Exercício: combate + coleta funcionando em multiplayer
+
+---
+
+## **Dia 4 – NPCs no Mundo**
+- [ ] NPCs espalhados no terreno
+- [ ] NPCs podem ser atacados e perder vida
+- [ ] Exercício: players veem NPCs sendo atacados em tempo real
+
+---
+
+## **Dia 5 – Feedback de Imersão (Partículas + Sons)**
+- [ ] Partículas para ataques e magias
+- [ ] Sons de passos, coleta e combate
+- [ ] Música ambiente no mundo
+- [ ] Exercício: jogar 10 min com feedback audiovisual ativo
+
+---
+
+## **Dia 6 – Polimento Final**
+- [ ] Ajustar câmera e iluminação global
+- [ ] Revisar colisões e escalas do terreno
+- [ ] Corrigir bugs no HUD e inventário
+- [ ] Exercício: checklist final de correções
+
+---
+
+## **Dia 7 – Protótipo Final Online**
+- [ ] Player animado com idle/walk/jump/ataque
+- [ ] Terreno realista com texturas e NPCs
+- [ ] HUD completo: vida, mana, inventário e mensagens
+- [ ] Itens coletáveis sincronizados
+- [ ] Combate entre players e contra NPCs
+- [ ] Partículas e sons para feedback
+- [ ] Sessão multiplayer com 2+ players rodando
+- [ ] Resultado esperado: **Protótipo completo de RPG multiplayer em JM**

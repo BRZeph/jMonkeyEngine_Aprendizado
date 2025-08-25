@@ -1,0 +1,47 @@
+# 📚 Rota de Aprofundamento – RPG Multiplayer em JM (Semanas 5 a 8)
+
+### 🎯 Objetivo geral
+- [ ] Aprender a usar **rede/multiplayer** no JM (SpiderMonkey)
+- [ ] Montar a base de um **RPG Multiplayer** (player, combate, HUD, inventário)
+- [ ] Aprofundar física, terrenos, AppStates e HUD/UI
+- [ ] Entregar um **protótipo funcional de RPG online**
+
+---
+
+## Semana 5 – Rede e Estrutura Multiplayer
+- [ ] Instalar e configurar **SpiderMonkey**
+- [ ] Criar **servidor** que aceita múltiplas conexões
+- [ ] Criar **cliente** que envia posição do player ao servidor
+- [ ] Servidor retransmite posições para todos os clientes
+- [ ] Representar players no mapa como caixas (avatares placeholders)
+- [ ] Exercício: mover dois clientes diferentes e ver movimento sincronizado
+
+---
+
+## Semana 6 – RPG Base
+- [ ] Substituir cubos por **personagens animados** (idle e walk)
+- [ ] Sincronizar animações pela rede (idle ↔ walk ↔ ataque)
+- [ ] Criar **HUD inicial** com vida, mana e nome do player
+- [ ] Implementar combate básico (ataque → reduz vida de outro player)
+- [ ] Exibir feedback no HUD (vida diminuindo)
+- [ ] Exercício: dois players conectados duelando no servidor
+
+---
+
+## Semana 7 – Mundo e Conteúdo
+- [ ] Criar **terreno com heightmap realista** (mapa maior)
+- [ ] Aplicar texturas tileadas (grama, rocha, areia)
+- [ ] Adicionar NPCs básicos controlados no servidor
+- [ ] Criar HUD com inventário simples (lista textual)
+- [ ] Implementar **itens coletáveis** espalhados no mapa
+- [ ] Exercício: players coletam itens e inventário é atualizado no HUD
+
+---
+
+## Semana 8 – Protótipo Multiplayer de RPG
+- [ ] Player faz login no servidor e entra no mundo
+- [ ] Enxerga **outros players conectados**
+- [ ] Movimenta-se, coleta itens e interage em combate simples
+- [ ] HUD mostra vida, mana e inventário atualizado
+- [ ] Adicionar partículas e sons básicos (magia, ataque, passos)
+- [ ] Exercício final: sessão multiplayer com 2+ players explorando o mapa

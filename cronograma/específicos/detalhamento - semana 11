@@ -1,0 +1,57 @@
+# 📚 Semana 11 – Sons Complexos
+
+### 🎯 Objetivo da semana
+- [ ] Implementar música ambiente dinâmica
+- [ ] Usar sons 3D posicionais (espaciais)
+- [ ] Mixar volumes (música x efeitos)
+- [ ] Criar ambiente sonoro imersivo
+
+---
+
+## **Dia 1 – Música Ambiente**
+- [ ] Tocar música em loop com `AudioNode`
+- [ ] Criar 2 faixas: exploração e combate
+- [ ] Exercício: trocar música ao iniciar combate
+
+---
+
+## **Dia 2 – Sons 3D (Posicionais)**
+- [ ] Configurar `AudioNode.setPositional(true)`
+- [ ] Ajustar distância de referência (`setRefDistance`)
+- [ ] Exercício: fogueira emite som apenas perto dela
+
+---
+
+## **Dia 3 – Efeitos Sonoros Detalhados**
+- [ ] Sons de passos diferentes por terreno (grama, pedra, água)
+- [ ] Som de abrir baú
+- [ ] Som de ataque mágico e físico
+
+---
+
+## **Dia 4 – Mixagem de Volumes**
+- [ ] Controlar volume global do jogo
+- [ ] Controlar volume individual de efeitos e música
+- [ ] Exercício: criar menu de opções de áudio
+
+---
+
+## **Dia 5 – Integração com Partículas e HUD**
+- [ ] Som + partículas ao lançar magia
+- [ ] Efeito sonoro + aviso no HUD ao sofrer dano
+- [ ] Exercício: ataque mágico gera partícula + som sincronizado
+
+---
+
+## **Dia 6 – Sons Dinâmicos**
+- [ ] Alterar intensidade de música conforme status do player
+- [ ] Criar fade in/out entre faixas
+- [ ] Exercício: player com pouca vida → música mais tensa
+
+---
+
+## **Dia 7 – Mini-projeto: Ambiente Sonoro Imersivo**
+- [ ] Música ambiente dinâmica
+- [ ] Sons 3D posicionais (fogueira, rio, inimigos)
+- [ ] Mixagem equilibrada de volumes
+- [ ] Resultado esperado: **áudio imersivo de RPG**

@@ -1,0 +1,74 @@
+# 📚 Semana 3 – Interação e Expansão
+
+### 🎯 Objetivo da semana
+- [ ] Aprender a interagir com objetos (picking/raycast)
+- [ ] Carregar e animar modelos 3D com `AnimComposer`
+- [ ] Adicionar sons 3D e música ambiente
+- [ ] Criar efeitos visuais (partículas)
+- [ ] Iniciar HUD mais elaborado (vida, ícones, status)
+- [ ] Modularizar lógica com `AppState`
+- [ ] Montar mini-projeto com personagem animado, HUD e interações
+
+---
+
+## **Dia 15 – Picking (seleção de objetos)**
+- [ ] Estudar raycasting no JM (`CollisionResults`)
+- [ ] Detectar objeto clicado com mouse
+- [ ] Alterar cor ou material do objeto selecionado
+- [ ] Exibir nome do objeto no HUD ao clicar
+- [ ] Exercício: criar cubo coletável que muda de cor ao clique
+
+---
+
+## **Dia 16 – Animações de Personagem**
+- [ ] Carregar modelo `.glb` ou `.j3o` animado
+- [ ] Explorar `AnimComposer` para trocar animações
+- [ ] Criar transição entre “idle” e “walk” quando player se move
+- [ ] Adicionar “jump” ao pressionar espaço
+- [ ] Exercício: usar um modelo simples e alternar idle ↔ walk
+
+---
+
+## **Dia 17 – Sons (AudioNode)**
+- [ ] Reproduzir som ambiente (música looping)
+- [ ] Adicionar som 3D a um objeto (ex.: cachoeira)
+- [ ] Ativar som de efeito ao pular
+- [ ] Ajustar volume global e por fonte sonora
+- [ ] Exercício: música de fundo + som de passos
+
+---
+
+## **Dia 18 – Partículas (efeitos visuais)**
+- [ ] Criar `ParticleEmitter` básico (fogo, fumaça)
+- [ ] Alterar textura da partícula (fogo, poeira, mágica)
+- [ ] Ajustar tamanho, velocidade e duração das partículas
+- [ ] Ativar partículas ao coletar um objeto
+- [ ] Exercício: cubo que explode em partículas quando clicado
+
+---
+
+## **Dia 19 – UI/HUD (vida e status)**
+- [ ] Criar texto de “HP: 100” no canto superior
+- [ ] Alterar valor ao pressionar tecla (simulando dano)
+- [ ] Adicionar ícone simples (textura 2D) na tela
+- [ ] Usar cores (verde → vermelho) para barra de vida
+- [ ] Exercício: HUD de vida que diminui quando SPACE é pressionado
+
+---
+
+## **Dia 20 – AppStates (organizando lógica)**
+- [ ] Criar novo `AppState` (PauseState)
+- [ ] Alternar entre jogo e menu de pause
+- [ ] Mover lógica do player para `PlayerAppState`
+- [ ] Mover lógica do HUD para `UIAppState`
+- [ ] Exercício: tecla ESC abre/fecha pause state
+
+---
+
+## **Dia 21 – Mini-projeto: Personagem + Interações**
+- [ ] Player animado com idle/walk/jump
+- [ ] Terreno básico explorável
+- [ ] Picking para coletar itens ou mudar cor de objetos
+- [ ] HUD mostrando vida e coordenadas
+- [ ] Sons de passos e música ambiente
+- [ ] Efeito de partículas em evento especial (ex.: coleta de item)

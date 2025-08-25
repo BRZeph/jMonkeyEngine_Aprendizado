@@ -1,0 +1,131 @@
+# 🎯 Objetivos de Aprendizado – JM (12 Semanas)
+
+## Semana 1 – Fundamentos
+- [ ] Entender a estrutura básica do JM (`SimpleApplication`, loop de jogo)
+- [ ] Criar geometrias simples (cubos, esferas) e aplicar materiais
+- [ ] Usar câmera (`flyCam`, frustum, FOV)
+- [ ] Mapear entradas de teclado para mover objetos
+- [ ] Adicionar iluminação básica (DirectionalLight, AmbientLight)
+- [ ] Compreender a árvore de cena (`Node`, `Geometry`, `Spatial`)
+- [ ] Criar primeira cena interativa iluminada
+
+---
+
+## Semana 2 – Física e Movimento
+- [ ] Usar o motor de física (`BulletAppState`)
+- [ ] Criar player com colisão e gravidade (`BetterCharacterControl`)
+- [ ] Implementar chão com colisão estática
+- [ ] Construir terreno procedural com `TerrainQuad`
+- [ ] Usar câmera em terceira pessoa (`ChaseCamera`)
+- [ ] Criar HUD simples mostrando coordenadas
+- [ ] Montar mundo jogável com terreno e player explorável
+
+---
+
+## Semana 3 – Interação e Expansão
+- [ ] Interagir com objetos via picking (raycasting)
+- [ ] Controlar animações de personagens com `AnimComposer`
+- [ ] Usar sons básicos (`AudioNode`) para ambiente e efeitos
+- [ ] Criar partículas simples (fogo, fumaça)
+- [ ] Iniciar HUD de vida e status
+- [ ] Modularizar lógica com `AppStates`
+- [ ] Integrar animação, HUD, áudio e interações num mini-projeto
+
+---
+
+## Semana 4 – Consolidação e Protótipo Offline
+- [ ] Estruturar jogo em `AppStates` (World, Player, UI)
+- [ ] Criar terreno com heightmap e texturas
+- [ ] Adicionar inimigos básicos com IA simples
+- [ ] Implementar itens coletáveis e inventário
+- [ ] Criar HUD avançado (vida + inventário)
+- [ ] Adicionar sons de passos, coleta e música ambiente
+- [ ] Polir iluminação, câmera e escalas
+- [ ] Entregar protótipo jogável **offline**
+
+---
+
+## Semana 5 – Rede e Estrutura Multiplayer
+- [ ] Configurar SpiderMonkey para rede
+- [ ] Criar servidor e cliente básicos
+- [ ] Sincronizar posições de múltiplos players
+- [ ] Gerenciar entrada/saída de jogadores
+- [ ] Otimizar rede (interpolação, taxa de updates)
+- [ ] Modularizar rede em `NetworkAppState`
+- [ ] Criar protótipo multiplayer simples com cubos
+
+---
+
+## Semana 6 – RPG Base Multiplayer
+- [ ] Substituir cubos por personagens animados
+- [ ] Sincronizar animações pela rede (idle, walk, attack)
+- [ ] Criar HUD inicial (vida, mana, nome do player)
+- [ ] Implementar combate básico online
+- [ ] Adicionar feedback visual/sonoro de combate
+- [ ] Modularizar RPG em AppStates (Player, Combat, UI)
+- [ ] Protótipo base de RPG multiplayer funcional
+
+---
+
+## Semana 7 – Mundo e Conteúdo
+- [ ] Criar terreno realista com heightmap e texturas tileadas
+- [ ] Adicionar NPCs básicos controlados pelo servidor
+- [ ] Implementar inventário simples no HUD
+- [ ] Criar itens coletáveis no mundo
+- [ ] Sincronizar coleta e inventário entre players
+- [ ] Adicionar feedback visual/sonoro ao coletar
+- [ ] Mini-projeto: mundo online com NPCs e inventário básico
+
+---
+
+## Semana 8 – Protótipo Multiplayer de RPG
+- [ ] Criar sistema simples de login (nickname)
+- [ ] Sincronizar totalmente players (movimento, animação, status)
+- [ ] Implementar combate e coleta multiplayer
+- [ ] Adicionar NPCs interativos atacáveis
+- [ ] Criar efeitos visuais (partículas) e sonoros para combate
+- [ ] Polir HUD e corrigir bugs
+- [ ] Protótipo de **RPG multiplayer online** jogável
+
+---
+
+## Semana 9 – Modelos e Importação
+- [ ] Exportar modelos do Blender para `.glb`
+- [ ] Converter para `.j3o` no JM SDK
+- [ ] Carregar modelos externos no jogo
+- [ ] Adicionar colisão em objetos importados
+- [ ] Substituir player e NPCs por modelos 3D reais
+- [ ] Criar cena com assets vindos do Blender
+
+---
+
+## Semana 10 – Materiais e Iluminação Avançada
+- [ ] Aplicar materiais PBR (`PBRLighting.j3md`)
+- [ ] Usar texturas albedo, normal, roughness, metallic
+- [ ] Criar sombras dinâmicas (`ShadowRenderer`)
+- [ ] Usar múltiplas luzes (sol, tochas, magias)
+- [ ] Implementar ciclo dia/noite imersivo
+- [ ] Adicionar pós-processamento (Bloom, Fog, Depth of Field)
+- [ ] Montar mundo visualmente realista
+
+---
+
+## Semana 11 – Sons Complexos
+- [ ] Adicionar música ambiente em loop
+- [ ] Trocar faixas dinamicamente (exploração ↔ combate)
+- [ ] Usar sons 3D posicionais (fogos, rios, inimigos)
+- [ ] Criar sons detalhados (passos, baús, magias)
+- [ ] Controlar volumes (mixagem música/efeitos)
+- [ ] Criar menu de opções de áudio
+- [ ] Entregar ambiente sonoro imersivo
+
+---
+
+## Semana 12 – Efeitos e Imersão Final
+- [ ] Criar partículas avançadas (chuva, magias, fogo)
+- [ ] Aplicar pós-processamento final (Bloom, Fog, DOF)
+- [ ] Refinar HUD de opções gráficas/áudio
+- [ ] Polir iluminação, ciclo dia/noite e interiores
+- [ ] Testar sessão multiplayer com 2+ players
+- [ ] Ajustar performance (LOD, batching, otimização de partículas)
+- [ ] Entregar **protótipo completo de RPG multiplayer imersivo**

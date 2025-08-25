@@ -1,0 +1,39 @@
+# 📚 Rota Extra – Gráficos e Sons no JM (Semanas 9–12)
+
+## Semana 9 – Modelos e Importação
+- [ ] Exportar modelos do Blender para `.glb`
+- [ ] Converter para `.j3o` no JM SDK
+- [ ] Carregar modelos com `assetManager.loadModel()`
+- [ ] Adicionar colisão com `CollisionShapeFactory`
+- [ ] Substituir player e NPCs por modelos externos
+- [ ] Mini-projeto: cena com objetos e personagens importados
+
+---
+
+## Semana 10 – Materiais e Iluminação Avançada
+- [ ] Aplicar materiais PBR (`PBRLighting.j3md`)
+- [ ] Usar texturas albedo, normal, roughness, metallic
+- [ ] Criar sombras dinâmicas (`DirectionalLightShadowRenderer`)
+- [ ] Adicionar tochas, magias e iluminação ambiente
+- [ ] Implementar ciclo dia/noite
+- [ ] Mini-projeto: mapa realista com iluminação avançada
+
+---
+
+## Semana 11 – Sons Complexos
+- [ ] Música ambiente em loop
+- [ ] Troca dinâmica de faixas (exploração ↔ combate)
+- [ ] Sons 3D posicionais (fogos, rios, inimigos)
+- [ ] Sons detalhados (passos, baús, magias)
+- [ ] Mixagem de volumes (menu de opções de áudio)
+- [ ] Mini-projeto: ambiente sonoro imersivo
+
+---
+
+## Semana 12 – Efeitos e Imersão Final
+- [ ] Partículas avançadas para magias e ambiente
+- [ ] Pós-processamento (Bloom, Fog, Depth of Field)
+- [ ] HUD de opções gráficas e áudio
+- [ ] Cena polida com ciclo dia/noite + iluminação interior
+- [ ] Sessão multiplayer com 2+ players testando imersão
+- [ ] Protótipo final: RPG multiplayer audiovisual completo

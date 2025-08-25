@@ -1,0 +1,57 @@
+# 📚 Semana 10 – Materiais e Iluminação Avançada
+
+### 🎯 Objetivo da semana
+- [ ] Aplicar **materiais PBR** (realistas) nos modelos
+- [ ] Usar texturas de alta qualidade (albedo, normal, roughness, metallic)
+- [ ] Adicionar sombras dinâmicas e iluminação mais complexa
+- [ ] Criar ciclo dia/noite para imersão
+
+---
+
+## **Dia 1 – Materiais PBR (Physically Based Rendering)**
+- [ ] Usar `PBRLighting.j3md` para materiais
+- [ ] Aplicar texturas **albedo** (cor), **normal**, **roughness**, **metallic**
+- [ ] Exercício: criar baú metálico com reflexo realista
+
+---
+
+## **Dia 2 – Texturização Avançada**
+- [ ] Aplicar texturas tileadas no terreno
+- [ ] Combinar várias texturas (grama, pedra, areia)
+- [ ] Testar normal maps para relevo falso
+
+---
+
+## **Dia 3 – Sombras Dinâmicas**
+- [ ] Usar `DirectionalLightShadowRenderer` para sombras
+- [ ] Ajustar resolução e intensidade da sombra
+- [ ] Exercício: personagem projetando sombra no chão
+
+---
+
+## **Dia 4 – Múltiplas Fontes de Luz**
+- [ ] Adicionar tochas com `PointLight`
+- [ ] Usar `SpotLight` para efeitos de magias
+- [ ] Ajustar combinação entre luz ambiente + direcional
+
+---
+
+## **Dia 5 – Ciclo Dia/Noite**
+- [ ] Criar sistema que altera cor e intensidade da luz direcional
+- [ ] Adicionar gradiente de céu (manhã, tarde, noite)
+- [ ] Exercício: dia dura 5 min, noite dura 5 min
+
+---
+
+## **Dia 6 – Pós-processamento Gráfico**
+- [ ] Usar `FilterPostProcessor` para efeitos visuais
+- [ ] Ativar **Bloom** (glow), **Fog**, **Depth of Field**
+- [ ] Exercício: adicionar neblina ao cenário noturno
+
+---
+
+## **Dia 7 – Mini-projeto: Mundo Realista**
+- [ ] Terreno com texturas realistas
+- [ ] Sombras dinâmicas funcionando
+- [ ] Ciclo dia/noite ativo
+- [ ] Resultado esperado: **mapa com atmosfera realista e imersiva**

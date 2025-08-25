@@ -1,0 +1,57 @@
+# 📚 Semana 9 – Modelos e Importação
+
+### 🎯 Objetivo da semana
+- [ ] Aprender a importar modelos criados no **Blender** ou outro software 3D
+- [ ] Usar o formato `.glb` / `.j3o` no JM
+- [ ] Criar cena com personagens e objetos modelados externamente
+- [ ] Adicionar colisão em modelos importados
+
+---
+
+## **Dia 1 – Exportação de Modelos (Blender → GLTF)**
+- [ ] Modelar objeto simples no Blender (espada, árvore, baú)
+- [ ] Exportar em `.glb` ou `.gltf`
+- [ ] Testar no visualizador GLTF externo (garantir compatibilidade)
+
+---
+
+## **Dia 2 – Conversão para .j3o**
+- [ ] Usar **jMonkeyEngine SDK** para converter `.glb` em `.j3o`
+- [ ] Carregar modelo no jogo com `assetManager.loadModel()`
+- [ ] Exibir modelo na cena inicial
+
+---
+
+## **Dia 3 – Colisão em Modelos**
+- [ ] Gerar colisão com `CollisionShapeFactory`
+- [ ] Usar `RigidBodyControl` para evitar atravessar objetos
+- [ ] Exercício: player colide com uma casa importada
+
+---
+
+## **Dia 4 – Cena com Objetos Importados**
+- [ ] Criar cena com múltiplos modelos (árvores, casas, armas)
+- [ ] Organizar em `Node` pai chamado “WorldObjects”
+- [ ] Testar performance (evitar excesso de polígonos)
+
+---
+
+## **Dia 5 – NPC com Modelo Importado**
+- [ ] Substituir NPC placeholder por modelo 3D do Blender
+- [ ] Anexar `BetterCharacterControl` para física
+- [ ] Exercício: NPC importado andando pelo terreno
+
+---
+
+## **Dia 6 – Player com Modelo Externo**
+- [ ] Substituir cubo do player por modelo humanoide exportado
+- [ ] Testar animações simples (idle/walk)
+- [ ] Ajustar escala do modelo no mundo
+
+---
+
+## **Dia 7 – Mini-projeto: Cena Importada**
+- [ ] Cena com terreno + objetos importados (árvores, casas, armas)
+- [ ] Player humanoide importado controlável
+- [ ] NPCs básicos com modelos importados
+- [ ] Resultado esperado: **protótipo com assets vindos do Blender**

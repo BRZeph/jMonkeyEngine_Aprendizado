@@ -1,0 +1,96 @@
+# 📚 Semana 4 – Consolidação e Protótipo Final
+
+### 🎯 Objetivo da semana
+- [ ] Consolidar todo o conhecimento adquirido nas semanas anteriores
+- [ ] Estruturar o projeto com `AppStates` bem definidos
+- [ ] Criar terreno com heightmap realista e texturas tileadas
+- [ ] Adicionar inimigos básicos (IA simples)
+- [ ] Implementar itens coletáveis e inventário simples
+- [ ] Melhorar HUD e feedback visual/sonoro
+- [ ] Polir iluminação, câmera e escalas para sensação de jogo completo
+- [ ] Concluir protótipo jogável no final do mês
+
+---
+
+## **Dia 22 – Estrutura do Projeto em AppStates**
+- [ ] Criar `WorldAppState` para o terreno e objetos de cenário
+- [ ] Criar `PlayerAppState` para lógica do personagem
+- [ ] Criar `UIAppState` para HUD e menus
+- [ ] Criar `GameAppState` ou `MainAppState` para controlar fluxo geral
+- [ ] Exercício: separar a lógica em pelo menos 3 AppStates
+
+---
+
+## **Dia 23 – Terreno Avançado com Texturas**
+- [ ] Carregar heightmap de imagem (`ImageBasedHeightMap`)
+- [ ] Usar `TerrainQuad` com múltiplas texturas tileadas (grama, rocha, areia)
+- [ ] Aplicar `TerrainLodControl` para otimizar performance
+- [ ] Garantir colisão do player com o novo terreno
+- [ ] Exercício: mapa jogável com variação de texturas
+
+---
+
+## **Dia 24 – Inimigo Básico (IA Simples)**
+- [ ] Criar `Node` inimigo com `BetterCharacterControl`
+- [ ] Programar para seguir o player com `walkDirection`
+- [ ] Usar distância mínima para ataque (ex.: printar “inimigo atacou”)
+- [ ] Adicionar vida ao inimigo (HUD ou debug log)
+- [ ] Exercício: inimigo persegue player até certa distância
+
+---
+
+## **Dia 25 – Itens Coletáveis e Inventário**
+- [ ] Criar objetos coletáveis (cubos, esferas) no terreno
+- [ ] Usar colisão ou picking para coleta
+- [ ] Adicionar ao inventário (lista simples em memória)
+- [ ] Mostrar itens coletados no HUD
+- [ ] Exercício: coletar 3 itens e exibir contador no HUD
+
+---
+
+## **Dia 26 – HUD Avançado + Partículas**
+- [ ] Melhorar HUD de vida (barra visual e cor dinâmica)
+- [ ] Mostrar inventário com ícones ou texto
+- [ ] Adicionar partículas quando item é coletado
+- [ ] Exibir mensagem temporária (“Item coletado!”)
+- [ ] Exercício: HUD dinâmico com vida + itens
+
+---
+
+## **Dia 27 – Sons de Feedback**
+- [ ] Adicionar som de passos do player
+- [ ] Som de coleta de item
+- [ ] Música ambiente mais imersiva
+- [ ] Ajustar volumes (efeitos vs música)
+- [ ] Exercício: jogar com som e verificar equilíbrio sonoro
+
+---
+
+## **Dia 28 – Polimento Visual e Câmera**
+- [ ] Melhorar iluminação global (DirectionalLight + AmbientLight)
+- [ ] Ajustar sombras (`DirectionalLightShadowRenderer`)
+- [ ] Corrigir escalas de objetos e terrenos (1 unidade ≈ 1 metro)
+- [ ] Ajustar câmera (`ChaseCamera`) para suavidade e zoom adequado
+- [ ] Exercício: cena polida e agradável de explorar
+
+---
+
+## **Dia 29 – Testes e Ajustes Finais**
+- [ ] Testar colisões e garantir que player não atravessa nada
+- [ ] Testar HUD e inventário
+- [ ] Revisar sons e partículas
+- [ ] Ajustar performance (LOD, menos partículas, menos draw calls)
+- [ ] Exercício: rodar sessão de jogo de 10 min sem bugs críticos
+
+---
+
+## **Dia 30 – Protótipo Final**
+- [ ] Player animado com idle/walk/jump
+- [ ] Terreno com heightmap e texturas realistas
+- [ ] Inimigo básico perseguindo player
+- [ ] Itens coletáveis adicionados ao inventário
+- [ ] HUD completo (vida + inventário + mensagens)
+- [ ] Sons e partículas para imersão
+- [ ] Câmera em terceira pessoa ajustada
+- [ ] Cena iluminada e polida
+- [ ] Protótipo jogável pronto para expandir em jogo maior
