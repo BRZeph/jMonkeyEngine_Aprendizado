@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="JavaProjectCodeInsightSettings">
+    <excluded-names>
+      <name>java.awt.event.ActionListener</name>
+      <name>java.lang.classfile.components.ClassPrinter.Node</name>
+      <name>javax.swing.Box</name>
+      <name>org.w3c.dom.Node</name>
+    </excluded-names>
+  </component>
+</project>

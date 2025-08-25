@@ -1,0 +1,170 @@
+package me.brzeph;
+
+import com.jme3.app.SimpleApplication;
+import com.jme3.font.BitmapFont;
+import com.jme3.font.BitmapText;
+import com.jme3.input.KeyInput;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.KeyTrigger;
+import com.jme3.light.AmbientLight;
+import com.jme3.light.DirectionalLight;
+import com.jme3.material.Material;
+import com.jme3.math.ColorRGBA;
+import com.jme3.math.Vector3f;
+import com.jme3.post.FilterPostProcessor;
+import com.jme3.post.filters.FogFilter;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.shape.Box;
+import com.jme3.scene.shape.Sphere;
+
+public class Test_01 extends SimpleApplication {
+
+    // guardamos o FOV atual para demonstrar alteração dinâmica
+    private float currentFov = 45f;
+    private BitmapText hud;         // HUD para mostrar FOV/aspect
+
+    @Override
+    public void simpleInitApp() {
+        // fundo
+        viewPort.setBackgroundColor(ColorRGBA.DarkGray);
+
+        // cena simples para referência
+        setupScene();
+
+        // câmera inicial
+        cam.setLocation(new Vector3f(6, 4, 12));
+        cam.lookAt(new Vector3f(0, 1, 0), Vector3f.UNIT_Y);
+        flyCam.setMoveSpeed(8f);
+
+        // define frustum com FOV atual (aqui a cam já existe)
+        applyPerspectiveFov(currentFov);
+
+        // HUD
+        setupHud();
+
+        // filtros (opcional): leve neblina para dar noção de profundidade
+        addFog();
+
+        // input para trocar FOV (F5/F6/F7/F8)
+        setupInput();
+    }
+
+    private void setupScene() {
+        // luz ambiente fraca
+        AmbientLight amb = new AmbientLight();
+        amb.setColor(ColorRGBA.White.mult(0.25f));
+        rootNode.addLight(amb);
+
+        // luz direcional estilo "sol"
+        DirectionalLight sun = new DirectionalLight();
+        sun.setColor(ColorRGBA.White);
+        sun.setDirection(new Vector3f(-1, -1, -0.5f).normalizeLocal());
+        rootNode.addLight(sun);
+
+        // chão (Lighting)
+        Geometry floor = new Geometry("Floor", new Box(6f, 0.1f, 6f));
+        Material floorMat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        floorMat.setBoolean("UseMaterialColors", true);
+        floorMat.setColor("Diffuse", ColorRGBA.Gray);
+        floorMat.setColor("Ambient", ColorRGBA.Gray.mult(0.3f));
+        floorMat.setColor("Specular", ColorRGBA.White);
+        floorMat.setFloat("Shininess", 8f);
+        floor.setMaterial(floorMat);
+        floor.setLocalTranslation(0, -0.1f, 0);
+        rootNode.attachChild(floor);
+
+        // cubo (Unshaded)
+        Geometry cube = new Geometry("Cube", new Box(0.75f, 0.75f, 0.75f));
+        Material unshaded = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        unshaded.setColor("Color", ColorRGBA.Orange);
+        cube.setMaterial(unshaded);
+        cube.setLocalTranslation(-2f, 0.75f, 0f);
+        rootNode.attachChild(cube);
+
+        // esfera (Lighting)
+        Geometry sphere = new Geometry("Sphere", new Sphere(32, 32, 0.9f));
+        Material shiny = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        shiny.setBoolean("UseMaterialColors", true);
+        shiny.setColor("Diffuse", new ColorRGBA(0.1f, 0.55f, 0.95f, 1f));
+        shiny.setColor("Ambient", new ColorRGBA(0.05f, 0.2f, 0.4f, 1f));
+        shiny.setColor("Specular", ColorRGBA.White);
+        shiny.setFloat("Shininess", 32f);
+        sphere.setMaterial(shiny);
+        sphere.setLocalTranslation(2f, 0.9f, 0f);
+        rootNode.attachChild(sphere);
+    }
+
+    private void setupHud() {
+        BitmapFont font = assetManager.loadFont("Interface/Fonts/Default.fnt");
+        hud = new BitmapText(font);
+        hud.setSize(font.getCharSet().getRenderedSize());
+        hud.setColor(ColorRGBA.White);
+        hud.setText("FOV: --\nAspect: --");
+        // posição no canto superior esquerdo
+        hud.setLocalTranslation(10, cam.getHeight() - 10, 0);
+        guiNode.attachChild(hud);
+        updateHud();
+    }
+
+    private void setupInput() {
+        inputManager.addMapping("FOV_45", new KeyTrigger(KeyInput.KEY_F5));
+        inputManager.addMapping("FOV_60", new KeyTrigger(KeyInput.KEY_F6));
+        inputManager.addMapping("FOV_75", new KeyTrigger(KeyInput.KEY_F7));
+        inputManager.addMapping("FOV_90", new KeyTrigger(KeyInput.KEY_F8));
+
+        inputManager.addListener(actionListener,
+                "FOV_45", "FOV_60", "FOV_75", "FOV_90");
+    }
+
+    private final ActionListener actionListener = (name, isPressed, tpf) -> {
+        if (isPressed) return; // só quando soltar a tecla
+        switch (name) {
+            case "FOV_45": setFovAndRefresh(45f); break;
+            case "FOV_60": setFovAndRefresh(60f); break;
+            case "FOV_75": setFovAndRefresh(75f); break;
+            case "FOV_90": setFovAndRefresh(90f); break;
+        }
+    };
+
+    private void setFovAndRefresh(float fov) {
+        currentFov = fov;
+        applyPerspectiveFov(currentFov);
+        updateHud();
+    }
+
+    private void applyPerspectiveFov(float fovDegrees) {
+        if (cam == null) return; // segurança
+        int w = cam.getWidth();
+        int h = Math.max(cam.getHeight(), 1);
+        float aspect = (float) w / (float) h;
+        cam.setFrustumPerspective(fovDegrees, aspect, 0.1f, 1000f);
+    }
+
+    private void updateHud() {
+        if (hud == null || cam == null) return;
+        float aspect = (float) cam.getWidth() / Math.max(cam.getHeight(), 1);
+        hud.setText(String.format("FOV: %.0f°\nAspect: %.3f", currentFov, aspect));
+        // reposiciona no topo quando a janela muda
+        hud.setLocalTranslation(10, cam.getHeight() - 10, 0);
+    }
+
+    private void addFog() {
+        FilterPostProcessor fpp = new FilterPostProcessor(assetManager);
+        FogFilter fog = new FogFilter();
+        fog.setFogColor(ColorRGBA.DarkGray);
+        fog.setFogDistance(80);
+        fog.setFogDensity(1.2f);
+        fpp.addFilter(fog);
+        viewPort.addProcessor(fpp);
+    }
+
+    @Override
+    public void reshape(int w, int h) {
+        super.reshape(w, h); // deixe o SimpleApplication cuidar do básico
+        if (cam == null) return; // reshape pode disparar cedo no startup
+        int hh = Math.max(h, 1);
+        float aspect = (float) w / (float) hh;
+        cam.setFrustumPerspective(currentFov, aspect, 0.1f, 1000f);
+        updateHud();
+    }
+}

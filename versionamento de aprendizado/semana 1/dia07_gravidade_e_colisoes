@@ -1,0 +1,175 @@
+package me.brzeph;
+
+import com.jme3.app.SimpleApplication;
+import com.jme3.bullet.BulletAppState;
+import com.jme3.bullet.collision.PhysicsCollisionEvent;
+import com.jme3.bullet.collision.PhysicsCollisionListener;
+import com.jme3.bullet.control.RigidBodyControl;
+import com.jme3.input.KeyInput;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.AnalogListener;
+import com.jme3.input.controls.KeyTrigger;
+import com.jme3.light.AmbientLight;
+import com.jme3.light.DirectionalLight;
+import com.jme3.material.Material;
+import com.jme3.math.ColorRGBA;
+import com.jme3.math.Vector3f;
+import com.jme3.renderer.RenderManager;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.shape.Box;
+import com.jme3.scene.shape.Sphere;
+
+public class Test_01 extends SimpleApplication implements PhysicsCollisionListener {
+
+    private Geometry playerCube;
+    private float velocidade = 3f;
+    private float boost = 6f;
+    private boolean isRunning = false;
+    private BulletAppState physics;
+
+    @Override
+    public void simpleInitApp() {
+        physics = new BulletAppState();
+        stateManager.attach(physics);
+        physics.getPhysicsSpace().addCollisionListener(this);
+
+        // 1) Configurações básicas
+        flyCam.setEnabled(false); // Desativa flycam padrão
+        cam.setLocation(new Vector3f(0, 8, 15));
+        cam.lookAt(new Vector3f(0, 0.5f, 0), Vector3f.UNIT_Y);
+        viewPort.setBackgroundColor(ColorRGBA.DarkGray);
+
+        // 2) Luzes
+        rootNode.addLight(createAmbientLight());
+        rootNode.addLight(createSunLight());
+
+        // 3) Cena
+        createChao();
+        createPlayerCube();
+        createEsferaAlvo();
+
+        // 4) Input
+        setupInput();
+    }
+
+    private void createChao() {
+        Geometry chao = new Geometry("Chao", new Box(6f, 0.1f, 6f));
+        Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        mat.setBoolean("UseMaterialColors", true);
+        mat.setColor("Diffuse", ColorRGBA.Gray);
+        mat.setColor("Ambient", ColorRGBA.Gray.mult(0.3f));
+        mat.setColor("Specular", ColorRGBA.White);
+        mat.setFloat("Shininess", 8f);
+        chao.setMaterial(mat);
+        chao.setLocalTranslation(0, -0.1f, 0);
+        RigidBodyControl floorPhysics = new RigidBodyControl(0); // massa = 0 → objeto estático
+        chao.addControl(floorPhysics);
+        physics.getPhysicsSpace().add(floorPhysics);
+        rootNode.attachChild(chao);
+    }
+
+    private void createPlayerCube() {
+        playerCube = new Geometry("Player", new Box(0.5f, 0.5f, 0.5f));
+        Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        mat.setBoolean("UseMaterialColors", true);
+        mat.setColor("Diffuse", ColorRGBA.Red);
+        mat.setColor("Ambient", ColorRGBA.Red.mult(0.3f));
+        mat.setColor("Specular", ColorRGBA.White);
+        mat.setFloat("Shininess", 16f);
+        playerCube.setMaterial(mat);
+        playerCube.setLocalTranslation(0, 0.5f, 0);
+        RigidBodyControl cubePhysics = new RigidBodyControl(1f); // estático (ou 1f para físico interativo)
+        playerCube.addControl(cubePhysics);
+        physics.getPhysicsSpace().add(cubePhysics);
+        cubePhysics.setEnabled(true);
+        rootNode.attachChild(playerCube);
+    }
+
+    private void createEsferaAlvo() {
+        Geometry alvo = new Geometry("Alvo", new Sphere(32, 32, 0.6f));
+        Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        mat.setBoolean("UseMaterialColors", true);
+        mat.setColor("Diffuse", ColorRGBA.Blue);
+        mat.setColor("Ambient", ColorRGBA.Blue.mult(0.3f));
+        mat.setColor("Specular", ColorRGBA.White);
+        mat.setFloat("Shininess", 32f);
+        alvo.setMaterial(mat);
+        alvo.setLocalTranslation(3, 0.6f, 2);
+        RigidBodyControl spherePhysics = new RigidBodyControl(1f); // massa > 0 → sofre gravidade
+        alvo.addControl(spherePhysics);
+        physics.getPhysicsSpace().add(spherePhysics);
+        rootNode.attachChild(alvo);
+    }
+
+    private void setupInput() {
+        inputManager.addMapping("Left",  new KeyTrigger(KeyInput.KEY_A));
+        inputManager.addMapping("Right", new KeyTrigger(KeyInput.KEY_D));
+        inputManager.addMapping("Forward", new KeyTrigger(KeyInput.KEY_W));
+        inputManager.addMapping("Back",    new KeyTrigger(KeyInput.KEY_S));
+        inputManager.addMapping("Jump",    new KeyTrigger(KeyInput.KEY_SPACE));
+        inputManager.addMapping("Run",     new KeyTrigger(KeyInput.KEY_LSHIFT));
+
+        inputManager.addListener(analogListener, "Left", "Right", "Forward", "Back", "Jump");
+        inputManager.addListener(actionListener, "Run");
+    }
+
+    private final ActionListener actionListener = (name, isPressed, tpf) -> {
+        if (name.equals("Run")) {
+            isRunning = isPressed;
+        }
+    };
+
+    private final AnalogListener analogListener = new AnalogListener() {
+        @Override
+        public void onAnalog(String name, float value, float tpf) {
+            float speed = isRunning ? boost : velocidade;
+
+            RigidBodyControl cubeControl = playerCube.getControl(RigidBodyControl.class);
+            if (cubeControl == null) return;
+
+            Vector3f force = new Vector3f(0, 0, 0);
+
+            switch (name) {
+                case "Left"    : force.addLocal(-speed, 0, 0); break;
+                case "Right"   : force.addLocal(speed, 0, 0); break;
+                case "Forward" : force.addLocal(0, 0, -speed); break;
+                case "Back"    : force.addLocal(0, 0, speed); break;
+                case "Jump":
+                    force.addLocal(0, 10f, 0); // impulso para cima
+                    break;
+            }
+
+            // aplica força central acumulada
+            cubeControl.applyCentralForce(force);
+        }
+    };
+
+    private DirectionalLight createSunLight() {
+        DirectionalLight sun = new DirectionalLight();
+        sun.setColor(ColorRGBA.White);
+        sun.setDirection(new Vector3f(-1f, -1f, -0.5f).normalizeLocal());
+        return sun;
+    }
+
+    private AmbientLight createAmbientLight() {
+        AmbientLight ambient = new AmbientLight();
+        ambient.setColor(ColorRGBA.White.mult(0.3f));
+        return ambient;
+    }
+
+    @Override
+    public void simpleUpdate(float tpf) {
+        // lógica de jogo se necessário
+    }
+
+    @Override
+    public void simpleRender(RenderManager rm) {
+        // debug visual opcional
+    }
+
+    @Override
+    public void collision(PhysicsCollisionEvent event) {
+        System.out.println("Colisão entre: " +
+                event.getNodeA().getName() + " e " + event.getNodeB().getName());
+    }
+}
