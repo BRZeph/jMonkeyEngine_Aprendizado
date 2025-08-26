@@ -18,6 +18,8 @@ import me.brzeph.infra.events.QuitToDesktopEvent;
 
 import java.util.Objects;
 
+import static me.brzeph.infra.constants.InputKeysConstants.*;
+
 public class MainMenuState extends BaseAppState {
     private EventBus bus;
     private SimpleApplication app;
@@ -94,7 +96,7 @@ public class MainMenuState extends BaseAppState {
         int baseY = (int)(camH * 0.60f);
         for (int i = 0; i < labels.length; i++) {
             BitmapText opt = new BitmapText(font);
-            opt.setText(labels[i]); // deixamos sem prefixo, adicionamos no highlight()
+            opt.setText(labels[i]);
             opt.setSize(font.getCharSet().getRenderedSize() * 1.5f);
             opt.setColor(new ColorRGBA(1f, 1f, 1f, 0.85f));
             centerX(opt);
@@ -114,11 +116,11 @@ public class MainMenuState extends BaseAppState {
 
         // ---- Inputs ----
         var im = app.getInputManager();
-        im.addMapping("MM_UP",    new KeyTrigger(KeyInput.KEY_UP),    new KeyTrigger(KeyInput.KEY_W));
-        im.addMapping("MM_DOWN",  new KeyTrigger(KeyInput.KEY_DOWN),  new KeyTrigger(KeyInput.KEY_S));
-        im.addMapping("MM_OK",    new KeyTrigger(KeyInput.KEY_RETURN), new KeyTrigger(KeyInput.KEY_SPACE));
-        im.addMapping("MM_BACK",  new KeyTrigger(KeyInput.KEY_ESCAPE));
-        im.addListener(listener, "MM_UP", "MM_DOWN", "MM_OK", "MM_BACK");
+        im.addMapping((MOVE_UP),  new KeyTrigger(KeyInput.KEY_UP),    new KeyTrigger(KeyInput.KEY_W));
+        im.addMapping((MOVE_DOWN),  new KeyTrigger(KeyInput.KEY_DOWN),  new KeyTrigger(KeyInput.KEY_S));
+        im.addMapping((OK),  new KeyTrigger(KeyInput.KEY_RETURN), new KeyTrigger(KeyInput.KEY_SPACE));
+        im.addMapping((BACK),  new KeyTrigger(KeyInput.KEY_ESCAPE));
+        im.addListener(listener, MOVE_UP, MOVE_DOWN, OK, BACK);
 
         // ---- Fade-in ----
         uiRoot.setQueueBucket(com.jme3.renderer.queue.RenderQueue.Bucket.Gui);
@@ -162,21 +164,21 @@ public class MainMenuState extends BaseAppState {
     private final ActionListener listener = (name, isPressed, tpf) -> {
         if (isPressed) return;
         switch (name) {
-            case "MM_UP" -> {
+            case MOVE_UP -> {
                 selected = (selected + options.length - 1) % options.length;
                 highlight();
                 if (sfxMove != null) sfxMove.playInstance();
             }
-            case "MM_DOWN" -> {
+            case MOVE_DOWN -> {
                 selected = (selected + 1) % options.length;
                 highlight();
                 if (sfxMove != null) sfxMove.playInstance();
             }
-            case "MM_OK" -> {
+            case OK -> {
                 if (sfxOk != null) sfxOk.playInstance();
                 confirm();
             }
-            case "MM_BACK" -> bus.post(new QuitToDesktopEvent());
+            case BACK -> bus.post(new QuitToDesktopEvent());
         }
     };
 
@@ -228,7 +230,9 @@ public class MainMenuState extends BaseAppState {
 
     @Override
     protected void onDisable() {
-        // nada
+
+
+
     }
 
     @Override
@@ -241,10 +245,10 @@ public class MainMenuState extends BaseAppState {
         // remove inputs
         var im = app.getInputManager();
         if (im != null) {
-            im.deleteMapping("MM_UP");
-            im.deleteMapping("MM_DOWN");
-            im.deleteMapping("MM_OK");
-            im.deleteMapping("MM_BACK");
+            im.deleteMapping(MOVE_UP);
+            im.deleteMapping(MOVE_DOWN);
+            im.deleteMapping(OK);
+            im.deleteMapping(BACK);
             im.removeListener(listener);
         }
     }

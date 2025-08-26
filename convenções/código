@@ -1,3 +1,7 @@
 código em inglês.
 comentários em português.
 constantes estáticas em classes *_constant.java.
+
+core.constants.* → coisas de domínio (ex.: atributos de personagem, limites de level, facções etc.).
+app.constants.* → coisas da camada de aplicação (ex.: nomes de eventos do bus, ids de sistemas).
+infra.constants.* → coisas de infraestrutura (paths de assets, nomes de estados do jogo, keys de input etc.).

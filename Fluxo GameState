@@ -1,0 +1,41 @@
+detalhamento no GameState.class, aqui está o visual.
+
+código mermaid (https://www.processon.io/mermaid/):
+flowchart TD
+
+    subgraph JME["JME Engine (AppState Manager)"]
+        GS["GameState (AppState)"]
+    end
+
+    subgraph AppSystems["Application Layer (Systems)"]
+        CS["CombatSystem"]
+        QS["QuestSystem"]
+        TS["TimeSystem"]
+        SS["SaveSystem"]
+    end
+
+    subgraph CoreServices["Core Layer (Services, puro Java)"]
+        CServ["CombatService"]
+        QServ["QuestService"]
+        TServ["TimeService"]
+        SServ["SaveService"]
+    end
+
+    subgraph Infra["Infra (Ports/Adapters)"]
+        Rend["Renderer"]
+        Aud["Audio"]
+        Phys["Physics"]
+        Save["SaveGamePort"]
+    end
+
+    GS -->|registra handlers no EventBus| AppSystems
+
+    CS -->|usa| CServ
+    CS -->|usa| Rend
+    CS -->|usa| Aud
+    CS -->|publica eventos| GS
+
+    QS -->|usa| QServ
+    TS -->|usa| TServ
+    SS -->|usa| SServ
+    SS -->|usa| Save

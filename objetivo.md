@@ -11,6 +11,13 @@ App → como as regras se combinam. <br>
 Infra → como o JME e o hardware entregam isso (render, input, physics, assets). <br>
 Bootstrap → start e wiring. <br>
 
+fluxo padrão de states: <br>
+initialize() <br>
+onEnable() <br>
+update() <br>
+onDisable() <br>
+cleanup() <br>
+
 começo da execução <br>
 MyGame.main() <br>
 MyGame.simpleInitApp() <br>

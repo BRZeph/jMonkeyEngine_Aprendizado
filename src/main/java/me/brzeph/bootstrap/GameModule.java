@@ -1,6 +1,7 @@
 package me.brzeph.bootstrap;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.renderer.Camera;
 import me.brzeph.app.ports.*;
 import me.brzeph.app.systems.CombatSystem;
 import me.brzeph.app.systems.QuestSystem;
@@ -24,6 +25,12 @@ public final class GameModule {
     private GameModule() {}
 
     public static void wire(SimpleApplication app) {
+        Camera cam = app.getCamera();
+        ServiceLocator.put(Camera.class, cam);
+
+        // Config inicial da câmera (FOV, near/far, aspect ratio, etc.)
+        cam.setFrustumPerspective(60f, (float) cam.getWidth() / cam.getHeight(), 0.1f, 1000f);
+
         // ---- Infra “cross” ----
         EventBus eventBus = new EventBus();
 
@@ -53,19 +60,16 @@ public final class GameModule {
         SaveSystem   saveSystem   = new SaveSystem();
 
         // ---- AppStates (JME) ----
-        LoadingState loading = new LoadingState(assets, eventBus
-//                , () -> new GameState(
-//                    renderer, audio, input, physics, eventBus, combatSystem, questSystem, timeSystem, saveSystem
-//                )
-        );
+        LoadingState loading = new LoadingState(assets, eventBus);
         MainMenuState menu = new MainMenuState(eventBus);
         HudState hud      = new HudState(eventBus);
         DialogueState dialogue = new DialogueState(eventBus);
-
         NavigationState nav = new NavigationState(eventBus);
+        GameState gameState = new GameState(
+                renderer, audio, input, physics, eventBus, combatSystem, questSystem, timeSystem, saveSystem, cam
+        );
 
         // ---- Registro no ServiceLocator ----
-//        ServiceLocator.put(GameState.Factory.class, loading.getGameStateFactory());
         ServiceLocator.put(EventBus.class, eventBus);
         ServiceLocator.put(Renderer.class, renderer);
         ServiceLocator.put(Audio.class, audio);
@@ -84,6 +88,6 @@ public final class GameModule {
         ServiceLocator.put(HudState.class, hud);
         ServiceLocator.put(DialogueState.class, dialogue);
         ServiceLocator.put(NavigationState.class, nav);
-//        ServiceLocator.put(GameState.Factory.class, loading.getGameStateFactory());
+        ServiceLocator.put(GameState.class, gameState);
     }
 }
