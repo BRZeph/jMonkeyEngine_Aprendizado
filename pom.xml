@@ -15,6 +15,7 @@
         <main.class>me.brzeph.Main</main.class>
         <jme.version>3.8.1-stable</jme.version>
         <jme.bullet.version>3.3.2-stable</jme.bullet.version>
+        <jackson.version>2.19.0</jackson.version>
     </properties>
 
     <dependencies>
@@ -37,6 +38,22 @@
 
         <!-- (Opcional) assets de exemplo (skybox / texturas) -->
         <dependency><groupId>org.jmonkeyengine</groupId><artifactId>jme3-testdata</artifactId><version>${jme.version}</version><scope>runtime</scope></dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
+        <dependency><groupId>com.fasterxml.jackson.core</groupId><artifactId>jackson-core</artifactId><version>${jackson.version}</version></dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
+        <dependency><groupId>com.fasterxml.jackson.core</groupId><artifactId>jackson-databind</artifactId><version>${jackson.version}</version></dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations -->
+        <dependency><groupId>com.fasterxml.jackson.core</groupId><artifactId>jackson-annotations</artifactId><version>${jackson.version}</version></dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jdk8 -->
+        <dependency><groupId>com.fasterxml.jackson.datatype</groupId><artifactId>jackson-datatype-jdk8</artifactId><version>${jackson.version}</version></dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310 -->
+        <dependency><groupId>com.fasterxml.jackson.datatype</groupId><artifactId>jackson-datatype-jsr310</artifactId><version>${jackson.version}</version></dependency>
+
     </dependencies>
 
     <build>
