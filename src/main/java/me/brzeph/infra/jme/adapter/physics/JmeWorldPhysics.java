@@ -1,21 +1,25 @@
-package me.brzeph.infra.jme.adapter;
+package me.brzeph.infra.jme.adapter.physics;
 
 import com.jme3.app.Application;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.CollisionShape;
+import com.jme3.bullet.control.PhysicsControl;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import me.brzeph.app.ports.Physics;
+import me.brzeph.infra.jme.adapter.SceneRegistry;
 
-public class JmePhysics implements Physics {
+import java.util.HashMap;
+import java.util.Map;
+
+public class JmeWorldPhysics {
 
     private final Application app;
     private BulletAppState bullet;
 
-    public JmePhysics(Application app) {
+    public JmeWorldPhysics(Application app) {
         this.app = app;
     }
 
@@ -23,7 +27,6 @@ public class JmePhysics implements Physics {
         this.bullet = bullet;
     }
 
-    @Override
     public void addRigidBody(long entityId, float mass) {
         Spatial s = SceneRegistry.get(entityId);
         if (s == null || bullet == null) return;
@@ -36,7 +39,6 @@ public class JmePhysics implements Physics {
         bullet.getPhysicsSpace().add(rbc);
     }
 
-    // ✅ Novo método helper
     public void addStaticMesh(Spatial s) {
         if (s == null || bullet == null) return;
 
@@ -52,7 +54,6 @@ public class JmePhysics implements Physics {
         bullet.getPhysicsSpace().add(rbc);
     }
 
-    @Override
     public void applyImpulse(long entityId, Vector3f impulse, Vector3f relPos) {
         Spatial s = SceneRegistry.get(entityId);
         if (s == null) return;
@@ -62,7 +63,6 @@ public class JmePhysics implements Physics {
         }
     }
 
-    @Override
     public boolean raycast(Vector3f from, Vector3f to) {
         if (bullet == null) return false;
         var results = bullet.getPhysicsSpace().rayTest(from, to);

@@ -2,24 +2,50 @@ package me.brzeph.infra.jme.factory;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.asset.TextureKey;
-import com.jme3.light.DirectionalLight;
+import com.jme3.bullet.BulletAppState;
+import com.jme3.bullet.collision.shapes.CollisionShape;
+import com.jme3.bullet.control.RigidBodyControl;
+import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
+import com.jme3.scene.shape.Box;
 import com.jme3.terrain.geomipmap.TerrainLodControl;
 import com.jme3.terrain.geomipmap.TerrainQuad;
 import com.jme3.terrain.heightmap.AbstractHeightMap;
 import com.jme3.terrain.heightmap.HillHeightMap;
 import com.jme3.texture.Texture;
-import me.brzeph.app.ports.Physics;
-import me.brzeph.infra.jme.adapter.JmePhysics;
-import me.brzeph.infra.jme.adapter.SceneRegistry;
+import me.brzeph.infra.jme.adapter.physics.JmeWorldPhysics;
 
 public final class WorldLoader {
 
-    public static void load(AssetManager assets, Node root, Physics physics, Camera cam) {
+    private WorldLoader() {} // utilitário estático
+
+    public static void loadFlatWorld(AssetManager assets, Node root, BulletAppState bullet, Camera cam) {
+        // Criar caixa (paralelepípedo)
+        Box ground = new Box(30f, 0.05f, 30f); // metade das dimensões (60, 0.1, 60)
+        Geometry geom = new Geometry("ground", ground);
+
+        // Material simples (pode trocar por textura depois)
+        Material mat = new Material(assets, "Common/MatDefs/Light/Lighting.j3md");
+        mat.setBoolean("UseMaterialColors", true);
+        mat.setColor("Diffuse", ColorRGBA.Green);
+        mat.setColor("Ambient", ColorRGBA.Green.mult(0.3f));
+        geom.setMaterial(mat);
+
+        // Colocar no mundo
+        geom.setLocalTranslation(0, -0.05f, 0); // alinhar no eixo Y
+        root.attachChild(geom);
+
+        // Física estática (massa = 0)
+        RigidBodyControl rbc = new RigidBodyControl(0f);
+        geom.addControl(rbc);
+        bullet.getPhysicsSpace().add(rbc);
+    }
+
+    public static void load(AssetManager assets, Node root, BulletAppState bullet, Camera cam) {
         int patchSize = 65;
         int size = 512;
 
@@ -42,10 +68,19 @@ public final class WorldLoader {
         mat.setFloat("Tex1Scale", 64f);
         terrain.setMaterial(mat);
 
+        // LOD para otimizar renderização
         TerrainLodControl control = new TerrainLodControl(terrain, cam);
         terrain.addControl(control);
 
+        // adiciona ao rootNode para aparecer na cena
         root.attachChild(terrain);
-        ((JmePhysics) physics).addStaticMesh(terrain);
+
+        // adiciona física estática (massa = 0)
+        CollisionShape shape = CollisionShapeFactory.createMeshShape(terrain);
+        RigidBodyControl rbc = new RigidBodyControl(shape, 0f);
+        terrain.addControl(rbc);
+
+        bullet.getPhysicsSpace().add(rbc);
     }
 }
+

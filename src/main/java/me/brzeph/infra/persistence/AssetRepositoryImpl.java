@@ -4,7 +4,6 @@ import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
 import com.jme3.font.BitmapFont;
 import com.jme3.scene.Spatial;
-import me.brzeph.app.ports.AssetsPort;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +13,7 @@ import java.util.logging.Logger;
  * Repositório de assets com um preload simples e tolerante a falhas.
  * Você pode registrar aqui tudo que deve estar em cache quando o jogo abre.
  */
-public class AssetRepositoryImpl implements AssetsPort {
+public class AssetRepositoryImpl {
 
     private static final Logger log = Logger.getLogger(AssetRepositoryImpl.class.getName());
 
@@ -24,7 +23,6 @@ public class AssetRepositoryImpl implements AssetsPort {
         this.assets = assets;
     }
 
-    @Override
     public void preload() {
         // Adapte esta lista aos seus assets reais:
         var fonts = List.of(

@@ -3,9 +3,8 @@ package me.brzeph.infra.jme.adapter;
 import com.jme3.app.Application;
 import com.jme3.audio.AudioNode;
 import com.jme3.math.Vector3f;
-import me.brzeph.app.ports.Audio;
 
-public class JmeAudio implements Audio {
+public class JmeAudio {
     private final Application app;
     private AudioNode currentMusic;
 
@@ -13,7 +12,6 @@ public class JmeAudio implements Audio {
         this.app = app;
     }
 
-    @Override
     public void playSfx(String assetPath, Vector3f at) {
         AudioNode sfx = new AudioNode(app.getAssetManager(), assetPath, false);
         sfx.setPositional(true);
@@ -23,7 +21,6 @@ public class JmeAudio implements Audio {
         sfx.play();
     }
 
-    @Override
     public void playMusic(String assetPath, boolean loop, float volume) {
         stopMusic();
         currentMusic = new AudioNode(app.getAssetManager(), assetPath, true);
@@ -34,7 +31,6 @@ public class JmeAudio implements Audio {
         currentMusic.play();
     }
 
-    @Override
     public void stopMusic() {
         if (currentMusic != null) {
             currentMusic.stop();

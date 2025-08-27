@@ -8,9 +8,8 @@ import com.jme3.effect.ParticleMesh;
 import com.jme3.material.Material;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
-import me.brzeph.app.ports.Renderer;
 
-public class JmeRenderer implements Renderer {
+public class JmeRenderer {
     private final Application app;
     private final AssetManager assets;
 
@@ -19,7 +18,6 @@ public class JmeRenderer implements Renderer {
         this.assets = app.getAssetManager();
     }
 
-    @Override
     public void playAnimation(long entityId, String anim, float speed, boolean loop) {
         Spatial s = SceneRegistry.get(entityId);
         if (s == null) return;
@@ -30,7 +28,6 @@ public class JmeRenderer implements Renderer {
         // loop é definido na própria action se precisar (padrão do AnimComposer)
     }
 
-    @Override
     public void spawnFx(String assetPath, Vector3f worldPos) {
         // Pode ser um modelo pronto ou um emissor genérico rápido:
         ParticleEmitter fx = new ParticleEmitter("fx", ParticleMesh.Type.Triangle, 50);
@@ -44,7 +41,6 @@ public class JmeRenderer implements Renderer {
         fx.emitAllParticles();
     }
 
-    @Override
     public void setMaterial(long entityId, String matAssetPath) {
         Spatial s = SceneRegistry.get(entityId);
         if (s == null) return;

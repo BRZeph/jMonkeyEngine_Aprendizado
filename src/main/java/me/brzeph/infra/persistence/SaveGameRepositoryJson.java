@@ -1,7 +1,5 @@
 package me.brzeph.infra.persistence;
 
-import me.brzeph.app.ports.SaveGamePort;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
@@ -19,7 +17,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
-public class SaveGameRepositoryJson implements SaveGamePort {
+public class SaveGameRepositoryJson {
 
     // ===== Config padrão =====
     private static final String DEFAULT_DIR_NAME = ".myrpg";
@@ -50,7 +48,6 @@ public class SaveGameRepositoryJson implements SaveGamePort {
     }
 
     // ===== SaveGamePort =====
-    @Override
     public void save(Object snapshot) {
         lock.lock();
         try {
@@ -64,7 +61,6 @@ public class SaveGameRepositoryJson implements SaveGamePort {
         }
     }
 
-    @Override
     public <T> T load(Class<T> type) {
         lock.lock();
         try {

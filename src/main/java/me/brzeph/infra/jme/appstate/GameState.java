@@ -6,18 +6,20 @@ import com.jme3.app.state.BaseAppState;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.control.BetterCharacterControl;
 import com.jme3.input.ChaseCamera;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.scene.Node;
-import me.brzeph.app.SystemsWiring;
-import me.brzeph.app.ports.Audio;
-import me.brzeph.app.ports.Input;
-import me.brzeph.app.ports.Physics;
-import me.brzeph.app.ports.Renderer;
 import me.brzeph.app.systems.*;
 import me.brzeph.bootstrap.ServiceLocator;
+import me.brzeph.core.domain.entity.Player;
+import me.brzeph.core.service.*;
 import me.brzeph.infra.events.EventBus;
-import me.brzeph.infra.jme.adapter.JmePhysics;
+import me.brzeph.infra.jme.adapter.JmeInput;
+import me.brzeph.infra.jme.adapter.audio.JmePlayerAudio;
+import me.brzeph.infra.jme.adapter.physics.CharacterPhysicsAdapter;
+import me.brzeph.infra.jme.adapter.physics.JmeWorldPhysics;
+import me.brzeph.infra.jme.adapter.renderer.JmePlayerRenderer;
 import me.brzeph.infra.jme.factory.WorldLoader;
 
 public class GameState extends BaseAppState {
@@ -52,92 +54,65 @@ public class GameState extends BaseAppState {
      */
 
     // ---- Core (injeções) ----
-    private final Renderer renderer;
-    private final Audio audio;
-    private final Input input;
-    private final Physics physics;
+    private JmeInput input;
     private final EventBus bus;
+    private Camera cam;
 
-    private final Camera cam;
-
-    private final CombatSystem combatSystem;
-    private final QuestSystem questSystem;
-    private final TimeSystem timeSystem;
-    private final SaveSystem saveSystem;
+    // ---- Systems ----
+    private PlayerSystem playerSystem;
+    private CombatSystem combatSystem;
+    private QuestSystem questSystem;
+    private TimeSystem timeSystem;
+    private SaveSystem saveSystem;
 
     // ---- Runtime refs ----
     private BulletAppState bullet;
     private Node root;
     private Node playerNode; // "spatial" do jogador
-    private BetterCharacterControl playerControl;
-    private MovementSystem movementSystem;
 
-    public GameState(Renderer renderer, Audio audio, Input input, Physics physics, EventBus bus,
-                     CombatSystem combatSystem, QuestSystem questSystem,
-                     TimeSystem timeSystem, SaveSystem saveSystem, Camera cam) {
-        this.renderer = renderer;
-        this.audio = audio;
-        this.input = input;
-        this.physics = physics;
+    public GameState(EventBus bus) {
         this.bus = bus;
-        this.combatSystem = combatSystem;
-        this.questSystem = questSystem;
-        this.timeSystem = timeSystem;
-        this.saveSystem = saveSystem;
-        this.cam = cam;
+        this.bullet = new BulletAppState();
     }
 
-    public interface Factory { GameState create(); }
+    @Override
+    public void update(float tpf) {
+        playerSystem.update(tpf);
+    }
 
     @Override
     protected void initialize(Application app) {
         SimpleApplication sapp = (SimpleApplication) app;
         this.root = sapp.getRootNode();
+        sapp.getStateManager().attach(bullet);
 
-        // 1) BulletAppState
-        this.bullet = new BulletAppState();
-        getStateManager().attach(bullet);
+        initCamera(sapp);
+        initSystems(sapp);
+        initWorld(sapp);
+    }
 
-        // 2) passar bullet para o adapter de física
-        ((JmePhysics) physics).setBullet(bullet);
+    @Override
+    protected void onEnable()  {
+        /* pode focar câmera, etc. */
+    }
+    @Override
+    protected void onDisable() {
+        /* pausar audio, etc. */
+    }
 
-        // 3) mundo (terreno, luzes, colliders estáticos, etc.)
-        WorldLoader.load(sapp.getAssetManager(), root, physics, cam);
+    @Override
+    protected void cleanup(Application app) {
+        clean();
+    }
 
-        // 4) HUD
-        HudState hud = ServiceLocator.get(HudState.class);
-        if (hud != null) getStateManager().attach(hud);
+    private void initCamera(SimpleApplication app) {
+        this.cam = app.getCamera();
+        ServiceLocator.put(Camera.class, cam);
+        // Config inicial da câmera (FOV, near/far, aspect ratio, etc.)
+        cam.setFrustumPerspective(60f, (float) cam.getWidth() / cam.getHeight(), 0.1f, 1000f);
 
-        // 5) input mappings (dispara eventos no EventBus)
-        input.bindGameplayMappings(bus);
-
-        // 6) registrar Systems no EventBus
-        SystemsWiring.register(bus, combatSystem, questSystem, timeSystem, saveSystem);
-
-        // 7) Player: Node + físico
-        this.playerNode = new Node("Player");
-        root.attachChild(playerNode);
-
-        getStateManager().attach(new CameraSystem(playerNode, sapp.getCamera()));
-
-        // collider do player (raio, altura, massa)
-        this.playerControl = new BetterCharacterControl(1.5f, 6f, 80f);
-        playerNode.addControl(playerControl);
-        bullet.getPhysicsSpace().add(playerControl);
-
-        // posição inicial segura (ligeiramente acima do terreno)
-        playerNode.setLocalTranslation(0, 5f, 0);
-
-        // 8) MovementSystem (escuta MoveKeyEvent e aplica walkDirection)
-        this.movementSystem = new MovementSystem(bus, playerControl);
-        getStateManager().attach(movementSystem);
-
-        // (opcional) travar rotação do player e usar câmera livre/seguindo
-        playerControl.setGravity(new Vector3f(0, -10f, 0));
-        playerControl.setJumpForce(new Vector3f(0, 20f, 0));
-
-        sapp.getFlyByCamera().setEnabled(false); // Fazer câmera em terceira pessoa
-        ChaseCamera chase = new ChaseCamera(sapp.getCamera(), playerNode, sapp.getInputManager());
+        app.getFlyByCamera().setEnabled(false); // Fazer câmera em terceira pessoa
+        ChaseCamera chase = new ChaseCamera(app.getCamera(), playerNode, app.getInputManager());
         chase.setDefaultDistance(10f);
         chase.setLookAtOffset(new Vector3f(0, 1.6f, 0));
         chase.setMaxDistance(20f);
@@ -145,19 +120,39 @@ public class GameState extends BaseAppState {
         chase.setRotationSpeed(2.5f);
     }
 
-    @Override protected void onEnable()  { /* pode focar câmera, etc. */ }
-    @Override protected void onDisable() { /* pausar audio, etc. */ }
+    private void initSystems(Application app) {
+//        // ---- Core services (puro Java) ----
+//        CombatService combatService  = new CombatService();
+//        QuestService questService    = new QuestService();
+//        LootService lootService      = new LootService();
+//        PathService pathService      = new PathService();
+//        // ---- Systems (app layer) ----
+//        CombatSystem combatSystem = new CombatSystem(combatService, renderer, audio, eventBus);
+//        QuestSystem  questSystem  = new QuestSystem(questService, eventBus);
+//        TimeSystem   timeSystem   = new TimeSystem(eventBus);
+//        SaveSystem   saveSystem   = new SaveSystem(savePort, assets, eventBus);
+        playerSystem = new PlayerSystem(
+                bus, new CharacterPhysicsAdapter(bullet),
+                new JmePlayerRenderer(root), new JmePlayerAudio(app.getAssetManager()),
+                app
+        );
+        combatSystem = new CombatSystem();
+        questSystem  = new QuestSystem();
+        timeSystem   = new TimeSystem();
+        saveSystem   = new SaveSystem();
+    }
 
-    @Override
-    protected void cleanup(Application app) {
+    private void initWorld(SimpleApplication sapp) {
+        WorldLoader.loadFlatWorld(
+                sapp.getAssetManager(),
+                root,
+                bullet,
+                cam
+        );
+    }
+
+    private void clean() {
         // desmontagem ordenada
-        if (movementSystem != null) {
-            getStateManager().detach(movementSystem);
-            movementSystem = null;
-        }
-        if (playerControl != null && bullet != null) {
-            bullet.getPhysicsSpace().remove(playerControl);
-        }
         if (playerNode != null) {
             playerNode.removeFromParent();
             playerNode = null;

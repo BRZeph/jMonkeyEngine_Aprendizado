@@ -2,17 +2,17 @@ package me.brzeph.infra.jme.appstate;
 
 import com.jme3.app.Application;
 import com.jme3.app.state.BaseAppState;
-import me.brzeph.app.ports.AssetsPort;
 import me.brzeph.bootstrap.ServiceLocator;
 import me.brzeph.infra.events.EventBus;
 import me.brzeph.infra.events.NavigateToEvent;
+import me.brzeph.infra.persistence.AssetRepositoryImpl;
 
 public class LoadingState extends BaseAppState {
 
-    private final AssetsPort assets;
+    private final AssetRepositoryImpl assets;
     private final EventBus bus;
 
-    public LoadingState(AssetsPort assets, EventBus bus) {
+    public LoadingState(AssetRepositoryImpl assets, EventBus bus) {
         this.assets = assets;
         this.bus = bus;
     }
