@@ -6,6 +6,9 @@ import com.jme3.app.state.BaseAppState;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.control.BetterCharacterControl;
 import com.jme3.input.ChaseCamera;
+import com.jme3.light.AmbientLight;
+import com.jme3.light.DirectionalLight;
+import com.jme3.math.ColorRGBA;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
@@ -68,7 +71,6 @@ public class GameState extends BaseAppState {
     // ---- Runtime refs ----
     private BulletAppState bullet;
     private Node root;
-    private Node playerNode; // "spatial" do jogador
 
     public GameState(EventBus bus) {
         this.bus = bus;
@@ -77,7 +79,8 @@ public class GameState extends BaseAppState {
 
     @Override
     public void update(float tpf) {
-        playerSystem.update(tpf);
+        playerSystem.update(tpf, cam);
+        bullet.update(tpf);
     }
 
     @Override
@@ -86,9 +89,11 @@ public class GameState extends BaseAppState {
         this.root = sapp.getRootNode();
         sapp.getStateManager().attach(bullet);
 
-        initCamera(sapp);
         initSystems(sapp);
+        initPlayer();
         initWorld(sapp);
+        initCamera(sapp);
+        initInputs(sapp);
     }
 
     @Override
@@ -105,6 +110,27 @@ public class GameState extends BaseAppState {
         clean();
     }
 
+    private void initInputs(Application app) {
+        input = new JmeInput(playerSystem.getPlayer(), app, bus);
+        input.bindGameplayMappings();
+    }
+
+    private void initPlayer() {
+        playerSystem.spawnPlayer(
+                new Player(
+                        new Vector3f(0, 3, 0),
+                        new Quaternion(0, 0, 0, 0),
+                        "bauticababau, falou o meu amor, bau bau bau",
+                        1,
+                        1,
+                        1,
+                        5
+                ),
+                getApplication().getAssetManager(),
+                root
+        );
+    }
+
     private void initCamera(SimpleApplication app) {
         this.cam = app.getCamera();
         ServiceLocator.put(Camera.class, cam);
@@ -112,7 +138,7 @@ public class GameState extends BaseAppState {
         cam.setFrustumPerspective(60f, (float) cam.getWidth() / cam.getHeight(), 0.1f, 1000f);
 
         app.getFlyByCamera().setEnabled(false); // Fazer câmera em terceira pessoa
-        ChaseCamera chase = new ChaseCamera(app.getCamera(), playerNode, app.getInputManager());
+        ChaseCamera chase = new ChaseCamera(app.getCamera(), playerSystem.getPlayerSpatial(), app.getInputManager());
         chase.setDefaultDistance(10f);
         chase.setLookAtOffset(new Vector3f(0, 1.6f, 0));
         chase.setMaxDistance(20f);
@@ -143,6 +169,7 @@ public class GameState extends BaseAppState {
     }
 
     private void initWorld(SimpleApplication sapp) {
+        initLighting();
         WorldLoader.loadFlatWorld(
                 sapp.getAssetManager(),
                 root,
@@ -151,12 +178,16 @@ public class GameState extends BaseAppState {
         );
     }
 
+    private void initLighting() {
+        root.addLight(new AmbientLight(ColorRGBA.White.mult(0.3f)));
+        DirectionalLight sun = new DirectionalLight();
+        sun.setColor(ColorRGBA.White);
+        sun.setDirection(new Vector3f(-1, -1, -1).normalizeLocal());
+        root.addLight(sun);
+    }
+
     private void clean() {
         // desmontagem ordenada
-        if (playerNode != null) {
-            playerNode.removeFromParent();
-            playerNode = null;
-        }
         if (bullet != null) {
             getStateManager().detach(bullet);
             bullet = null;

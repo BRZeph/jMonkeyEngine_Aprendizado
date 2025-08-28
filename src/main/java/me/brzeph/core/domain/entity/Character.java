@@ -8,14 +8,16 @@ public abstract class Character extends GameEntity {
     protected int level;
     protected int hp;
     protected int mp;
+    protected float speed;
 
     public Character(Vector3f position, Quaternion rotation,
-                     String name, int level, int hp, int mp) {
+                     String name, int level, int hp, int mp, float speed) {
         super(position, rotation);
         this.name = name;
         this.level = level;
         this.hp = hp;
         this.mp = mp;
+        this.speed = speed;
     }
 
     // getters/setters
@@ -33,5 +35,13 @@ public abstract class Character extends GameEntity {
 
     public boolean isAlive() {
         return hp > 0;
+    }
+
+    public float getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(float speed) {
+        this.speed = speed;
     }
 }

@@ -17,7 +17,7 @@ public class PlayerService {
         if (left)     dir.addLocal(Vector3f.UNIT_X.negate());
         if (right)    dir.addLocal(Vector3f.UNIT_X);
 
-        return dir.normalizeLocal().multLocal(0.1f); // 0.1f = velocidade base
+        return dir.normalizeLocal().multLocal(player.getSpeed());
     }
 
     public boolean canJump(Player player) {

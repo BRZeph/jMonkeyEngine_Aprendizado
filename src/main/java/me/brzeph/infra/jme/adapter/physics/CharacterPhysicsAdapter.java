@@ -39,8 +39,8 @@ public class CharacterPhysicsAdapter {
             control.setWalkDirection(walkDir);
 
             // sincroniza posição lógica com a do Spatial
-            Vector3f location = control.getSpatial().getWorldTranslation();
-            player.setPosition(location.clone());
+            player.setPosition(control.getSpatial().getWorldTranslation().clone());
+            player.setRotation(control.getSpatial().getWorldRotation().clone());
         }
     }
 
