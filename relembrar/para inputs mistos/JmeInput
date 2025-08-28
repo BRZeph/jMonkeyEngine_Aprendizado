@@ -1,0 +1,60 @@
+public class JmeInput implements ActionListener {
+
+    private final EventBus bus;
+    private final Player player;
+    private final Map<InputCombination, Runnable> inputActions = new HashMap<>();
+    private final Set<String> pressedKeys = new HashSet<>();  // Armazena as teclas pressionadas atualmente
+
+    public JmeInput(Player player, EventBus bus) {
+        this.bus = bus;
+        this.player = player;
+        bindGameplayMappings();
+    }
+
+    // Mapear teclas e combinações
+    private void bindGameplayMappings() {
+        inputActions.put(new InputCombination("A", "B"), this::action3);  // A + B = Ação 3
+        inputActions.put(new InputCombination("A"), this::action1);      // A = Ação 1
+        inputActions.put(new InputCombination("B"), this::action2);      // B = Ação 2
+
+        // Adicione outras combinações conforme necessário
+    }
+
+    @Override
+    public void onAction(String name, boolean isPressed, float tpf) {
+        if (isPressed) {
+            pressedKeys.add(name);  // Marca a tecla como pressionada
+        } else {
+            pressedKeys.remove(name);  // Remove a tecla se for solta
+        }
+
+        // Verificar combinações de teclas
+        checkInputCombinations();
+    }
+
+    // Verifica as combinações de teclas pressionadas
+    private void checkInputCombinations() {
+        for (Map.Entry<InputCombination, Runnable> entry : inputActions.entrySet()) {
+            InputCombination combination = entry.getKey();
+            if (combination.contains(pressedKeys)) {
+                entry.getValue().run();  // Executa a ação associada à combinação
+                break;  // Evita que mais de uma ação seja chamada se houver múltiplas combinações
+            }
+        }
+    }
+
+    // Ação 1 - Apenas tecla "A"
+    private void action1() {
+        System.out.println("Ação 1: Tecla A pressionada");
+    }
+
+    // Ação 2 - Apenas tecla "B"
+    private void action2() {
+        System.out.println("Ação 2: Tecla B pressionada");
+    }
+
+    // Ação 3 - Combinação de teclas "A + B"
+    private void action3() {
+        System.out.println("Ação 3: Teclas A + B pressionadas");
+    }
+}

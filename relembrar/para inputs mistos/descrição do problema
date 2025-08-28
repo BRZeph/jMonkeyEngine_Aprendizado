@@ -1,0 +1,8 @@
+
+como tratar inputs mistos? exemplo:
+A -> ação 1
+B -> ação 2
+A + B ao mesmo tempo -> ação 3 que não tem relação com 1 ou 2
+isso sem meter um monte de if no meio.
+se tiver A + B tem que mapear para um método diferente do A ou B sozinhos.
+claro que podem ser A + B + C + D + E + F...

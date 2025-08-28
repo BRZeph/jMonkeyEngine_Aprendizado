@@ -12,8 +12,8 @@ public class Player extends Character {
 //    private List<Quest> activeQuests;
 
 
-    public Player(Vector3f position, Quaternion rotation, String name, int level, int hp, int mp, float speed) {
-        super(position, rotation, name, level, hp, mp, speed);
+    public Player(Vector3f position, Quaternion rotation, String name, int level, int hp, int mp, float speed, float height) {
+        super(position, rotation, name, level, hp, mp, speed, height);
         this.register();
     }
 

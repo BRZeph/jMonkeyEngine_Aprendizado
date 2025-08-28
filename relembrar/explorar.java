@@ -83,16 +83,13 @@ public class Main extends SimpleApplication implements ActionListener {
         bodyGeo.setMaterial(m);
         bodyGeo.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
         player.attachChild(bodyGeo);
-
         // Controle de personagem (usa cápsula interna)
         bcc = new BetterCharacterControl(0.4f, 1.8f, 70f); // raio, altura, massa
         bcc.setGravity(new Vector3f(0, -30f, 0));
         bcc.setJumpForce(new Vector3f(0, 9f, 0));
         player.addControl(bcc);
-
         // Posição inicial
         player.setLocalTranslation(0, 2, 0);
-
         rootNode.attachChild(player);
         physics.getPhysicsSpace().add(bcc);
 
@@ -106,7 +103,7 @@ public class Main extends SimpleApplication implements ActionListener {
         chase.setRotationSensitivity(3f);
         chase.setLookAtOffset(new Vector3f(0, 1.2f, 0));
 
-        terrain = createTerrain();
+        terrain = createTerrain(); // "Morros" ao redor
         rootNode.attachChild(terrain);
 
         // Texto de coordenadas (HUD)

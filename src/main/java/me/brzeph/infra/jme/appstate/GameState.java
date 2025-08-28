@@ -4,7 +4,6 @@ import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.bullet.BulletAppState;
-import com.jme3.bullet.control.BetterCharacterControl;
 import com.jme3.input.ChaseCamera;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
@@ -13,15 +12,14 @@ import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.scene.Node;
+import com.jme3.terrain.geomipmap.TerrainQuad;
 import me.brzeph.app.systems.*;
 import me.brzeph.bootstrap.ServiceLocator;
 import me.brzeph.core.domain.entity.Player;
-import me.brzeph.core.service.*;
 import me.brzeph.infra.events.EventBus;
 import me.brzeph.infra.jme.adapter.JmeInput;
 import me.brzeph.infra.jme.adapter.audio.JmePlayerAudio;
 import me.brzeph.infra.jme.adapter.physics.CharacterPhysicsAdapter;
-import me.brzeph.infra.jme.adapter.physics.JmeWorldPhysics;
 import me.brzeph.infra.jme.adapter.renderer.JmePlayerRenderer;
 import me.brzeph.infra.jme.factory.WorldLoader;
 
@@ -71,10 +69,12 @@ public class GameState extends BaseAppState {
     // ---- Runtime refs ----
     private BulletAppState bullet;
     private Node root;
+    private TerrainQuad terrain; // Relevo de "morros" ao redor
 
     public GameState(EventBus bus) {
         this.bus = bus;
         this.bullet = new BulletAppState();
+//        bullet.setDebugEnabled(true);
     }
 
     @Override
@@ -86,11 +86,10 @@ public class GameState extends BaseAppState {
     @Override
     protected void initialize(Application app) {
         SimpleApplication sapp = (SimpleApplication) app;
-        this.root = sapp.getRootNode();
-        sapp.getStateManager().attach(bullet);
 
+        initCore(sapp);
         initSystems(sapp);
-        initPlayer();
+        initPlayer(); // Before calling initCamera();
         initWorld(sapp);
         initCamera(sapp);
         initInputs(sapp);
@@ -110,6 +109,11 @@ public class GameState extends BaseAppState {
         clean();
     }
 
+    private void initCore(SimpleApplication sapp) {
+        this.root = sapp.getRootNode();
+        sapp.getStateManager().attach(bullet);
+    }
+
     private void initInputs(Application app) {
         input = new JmeInput(playerSystem.getPlayer(), app, bus);
         input.bindGameplayMappings();
@@ -124,7 +128,8 @@ public class GameState extends BaseAppState {
                         1,
                         1,
                         1,
-                        5
+                        5,
+                        1.8f
                 ),
                 getApplication().getAssetManager(),
                 root
@@ -168,15 +173,19 @@ public class GameState extends BaseAppState {
         saveSystem   = new SaveSystem();
     }
 
-    private void initWorld(SimpleApplication sapp) {
-        initLighting();
-        WorldLoader.loadFlatWorld(
-                sapp.getAssetManager(),
-                root,
-                bullet,
-                cam
-        );
-    }
+        private void initWorld(SimpleApplication sapp) {
+            initLighting();
+            WorldLoader.loadFlatWorld(
+                    sapp.getAssetManager(),
+                    root,
+                    bullet
+            );
+            this.terrain = WorldLoader.createTerrain(
+                    bullet,
+                    sapp.getAssetManager()
+            );
+            root.attachChild(terrain);
+        }
 
     private void initLighting() {
         root.addLight(new AmbientLight(ColorRGBA.White.mult(0.3f)));

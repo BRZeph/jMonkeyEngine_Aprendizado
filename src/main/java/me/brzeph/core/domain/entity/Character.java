@@ -9,15 +9,17 @@ public abstract class Character extends GameEntity {
     protected int hp;
     protected int mp;
     protected float speed;
+    protected float height;
 
     public Character(Vector3f position, Quaternion rotation,
-                     String name, int level, int hp, int mp, float speed) {
+                     String name, int level, int hp, int mp, float speed, float height) {
         super(position, rotation);
         this.name = name;
         this.level = level;
         this.hp = hp;
         this.mp = mp;
         this.speed = speed;
+        this.height = height;
     }
 
     // getters/setters
@@ -43,5 +45,13 @@ public abstract class Character extends GameEntity {
 
     public void setSpeed(float speed) {
         this.speed = speed;
+    }
+
+    public float getHeight() {
+        return height;
+    }
+
+    public void setHeight(float height) {
+        this.height = height;
     }
 }

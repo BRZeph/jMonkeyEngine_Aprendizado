@@ -1,0 +1,26 @@
+public class InputCombination {
+    private final Set<String> keys;  // Conjunto de teclas pressionadas
+
+    public InputCombination(String... keys) {
+        this.keys = new HashSet<>(Arrays.asList(keys));
+    }
+
+    // Override equals e hashCode para comparar as combinações de teclas
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        InputCombination that = (InputCombination) obj;
+        return keys.equals(that.keys);
+    }
+
+    @Override
+    public int hashCode() {
+        return keys.hashCode();
+    }
+
+    // Método para verificar se a combinação de teclas está presente
+    public boolean contains(Set<String> currentKeys) {
+        return currentKeys.containsAll(keys);  // Verifica se todas as teclas estão pressionadas
+    }
+}

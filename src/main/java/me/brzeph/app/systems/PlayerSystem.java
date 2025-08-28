@@ -2,8 +2,11 @@ package me.brzeph.app.systems;
 
 import com.jme3.app.Application;
 import com.jme3.asset.AssetManager;
+import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
+import com.jme3.bullet.control.BetterCharacterControl;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.renderer.queue.RenderQueue;
@@ -11,13 +14,17 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
+import com.jme3.scene.shape.Cylinder;
 import me.brzeph.core.domain.entity.Player;
 import me.brzeph.core.service.PlayerService;
 import me.brzeph.infra.events.EventBus;
-import me.brzeph.infra.events.InputActionEvent;
+import me.brzeph.infra.events.PlayerJumpEvent;
+import me.brzeph.infra.events.PlayerWalkEvent;
 import me.brzeph.infra.jme.adapter.audio.JmePlayerAudio;
 import me.brzeph.infra.jme.adapter.physics.CharacterPhysicsAdapter;
 import me.brzeph.infra.jme.adapter.renderer.JmePlayerRenderer;
+import me.brzeph.infra.jme.adapter.utils.InputAction;
+import me.brzeph.infra.jme.adapter.utils.InputState;
 import me.brzeph.infra.repository.GameEntityRepository;
 
 import java.util.HashMap;
@@ -33,12 +40,11 @@ public class PlayerSystem {
     private Spatial playerSpatial;
     private Node playerNode;
     private Player player;
-
-    // Estado atual de input para cada jogador
-    private static class PlayerInputState {
-        boolean forward, backward, left, right;
-    }
-    private final Map<String, PlayerInputState> inputStates = new HashMap<>();
+    private Vector3f walkDir;
+    private boolean movingForward = false;
+    private boolean movingBackward = false;
+    private boolean movingLeft = false;
+    private boolean movingRight = false;
 
     public PlayerSystem(EventBus bus,
                         CharacterPhysicsAdapter physicsAdapter,
@@ -51,75 +57,80 @@ public class PlayerSystem {
         this.playerRenderer = playerRenderer;
         this.playerAudio = playerAudio;
         initialize(app);
+        walkDir = new Vector3f();
     }
 
     private void initialize(Application app) {
-        bus.subscribe(InputActionEvent.class, this::onInputAction);
-    }
-
-    // Evento genérico de input
-    public void onInputAction(InputActionEvent event) {
-        PlayerInputState state = inputStates.computeIfAbsent(event.playerId(), k -> new PlayerInputState());
-
-        switch (event.action()) {
-            case MOVE_FORWARD  -> state.forward  = event.pressed();
-            case MOVE_BACKWARD -> state.backward = event.pressed();
-            case MOVE_LEFT     -> state.left     = event.pressed();
-            case MOVE_RIGHT    -> state.right    = event.pressed();
-
-            case JUMP -> {
-                if (event.pressed()) {
-                    Player player = (Player) GameEntityRepository.findById(event.playerId());
-                    if (player != null && playerService.canJump(player)) {
-                        physicsAdapter.jumpCharacter(player);
-                        playerAudio.playSound("jump.wav");
-                    }
-                }
-            }
-
-            default -> {
-                // outras ações (dash, ataque, etc.)
-            }
-        }
+        bus.subscribe(PlayerWalkEvent.class, this::onWalkAction);
+        bus.subscribe(PlayerJumpEvent.class, this::onJumpAction);
     }
 
     public void update(float tpf, Camera cam) {
-        for (var entry : inputStates.entrySet()) {
-            Player player = (Player) GameEntityRepository.findById(entry.getKey());
-            if (player == null) continue;
-
-            PlayerInputState state = entry.getValue();
-
-            // Obtendo a direção da câmera
-            Vector3f camDir = cam.getDirection().clone().normalize();
-            Vector3f camLeft = cam.getLeft().clone().normalize();
-
-            // Calculando o vetor de movimento relativo à câmera
-            Vector3f walkDir = new Vector3f();
-            if (state.forward)  walkDir.addLocal(camDir);
-            if (state.backward) walkDir.addLocal(camDir.negate());
-            if (state.left)     walkDir.addLocal(camLeft);
-            if (state.right)    walkDir.addLocal(camLeft.negate());
-
-            walkDir.normalizeLocal();  // Normaliza a direção para manter a mesma velocidade de movimento
-
-            // Aplicando o movimento ao personagem
+        /*
+        tratar updates dentro dos eventos, se for update sem evento tratar aqui.
+         */
+        walkDir = playerService.calculateWalkDir(
+                cam, player,
+                movingForward, movingBackward,
+                movingLeft, movingRight
+        );
+        if(movingForward || movingBackward || movingLeft || movingRight) {
             physicsAdapter.moveCharacter(player, walkDir);
-            playerRenderer.updatePosition(player);  // Atualiza o visual do player
+        } else {
+            physicsAdapter.moveCharacter(player, new Vector3f(0,0,0));
         }
     }
 
+    private void onJumpAction(PlayerJumpEvent playerJumpEvent) {
+        if(player == null) return;
+        switch (playerJumpEvent.getInputState()) {
+            case PRESSED:
+                physicsAdapter.jumpCharacter(player);
+//                playerAudio.playJumpSound();
+                break;
+
+            case RELEASED:
+                // Para quando for fazer salto proporcional ao tempo segurado.
+                break;
+        }
+    }
+
+    private void onWalkAction(PlayerWalkEvent event) {
+        Player player = (Player) GameEntityRepository.findById(event.getPlayerId());
+        if (player == null) return;
+        boolean state = event.getInputState() == InputState.PRESSED || event.getInputState() == InputState.HOLDING;
+        switch (event.getDirection()) {
+            case FORWARD:
+                movingForward = state;
+                break;
+            case BACKWARD:
+                movingBackward = state;
+                break;
+            case LEFT:
+                movingLeft = state;
+                break;
+            case RIGHT:
+                movingRight = state;
+                break;
+        }
+    }
 
     public void spawnPlayer(Player player, AssetManager assetManager, Node root) {
+        final float hitBoxSize = player.getHeight()/2;
+        /*
+        Box cria hitBoxSize para cima e hitBoxSize para baixo, usar metade do tamanho do player.
+        Dentro da física usar o tamanho inteiro do player.
+         */
         playerNode = new Node(player.getId());
-        Box bodyBox = new Box(0.3f, 0.9f, 0.3f);
+        Box bodyBox = new Box(0.3f, hitBoxSize, 0.3f);
         Geometry bodyGeo = new Geometry("Body", bodyBox);
         Material m = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         m.setColor("Color", ColorRGBA.Orange);
         bodyGeo.setMaterial(m);
         bodyGeo.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
+        bodyGeo.setLocalTranslation(0, hitBoxSize, 0);
         playerNode.attachChild(bodyGeo);
-        playerNode.setLocalTranslation(0, 1, 0);
+        playerNode.setLocalTranslation(0, 0, 0);
         physicsAdapter.registerCharacter(player, playerNode);
         this.playerSpatial = playerNode;
         root.attachChild(playerNode);

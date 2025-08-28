@@ -21,10 +21,13 @@ public class CharacterPhysicsAdapter {
     public void registerCharacter(Player player, Spatial model) {
         if (bullet == null || player == null || model == null) return;
 
-        BetterCharacterControl control = new BetterCharacterControl(1.5f, 6f, 80f);
+        BetterCharacterControl control = new BetterCharacterControl(
+                0.3f, player.getHeight(), 70f
+        );
+        control.setGravity(new Vector3f(0, -10f, 0));
+        control.setJumpForce(new Vector3f(0, 1000f, 0));
         model.addControl(control);
 
-        // posição inicial no spatial
         if (player.getPosition() != null) {
             model.setLocalTranslation(player.getPosition());
         }

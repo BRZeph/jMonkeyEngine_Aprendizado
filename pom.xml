@@ -54,7 +54,9 @@
         <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310 -->
         <dependency><groupId>com.fasterxml.jackson.datatype</groupId><artifactId>jackson-datatype-jsr310</artifactId><version>${jackson.version}</version></dependency>
 
-    </dependencies>
+        <!-- https://mvnrepository.com/artifact/com.simsilica/lemur -->
+        <dependency><groupId>com.simsilica</groupId><artifactId>lemur</artifactId><version>1.16.0</version></dependency>
+     </dependencies>
 
     <build>
         <plugins>
