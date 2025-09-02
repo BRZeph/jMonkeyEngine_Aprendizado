@@ -2,6 +2,7 @@ package me.brzeph.core.domain.entity;
 
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
+import me.brzeph.infra.repository.GameEntityRepository;
 
 public abstract class GameEntity {
     protected String id;
@@ -12,9 +13,8 @@ public abstract class GameEntity {
         this.id = null;
         this.position = position;
         this.rotation = rotation;
+        this.id = GameEntityRepository.register(this);
     }
-
-    public abstract boolean register();
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }

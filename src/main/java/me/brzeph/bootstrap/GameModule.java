@@ -3,6 +3,8 @@ package me.brzeph.bootstrap;
 import com.jme3.app.SimpleApplication;
 import com.jme3.renderer.Camera;
 import me.brzeph.app.systems.*;
+import me.brzeph.core.factory.CharacterFactory;
+import me.brzeph.core.factory.PlayerFactory;
 import me.brzeph.core.service.*;
 import me.brzeph.infra.events.EventBus;
 import me.brzeph.infra.jme.adapter.JmeAudio;
@@ -29,12 +31,11 @@ public final class GameModule {
         AssetRepositoryImpl assets   = new AssetRepositoryImpl(app.getAssetManager());
 
         // ---- AppStates (JME) ----
-        LoadingState loading = new LoadingState(assets, eventBus);
-        MainMenuState menu = new MainMenuState(eventBus);
-        HudState hud      = new HudState(eventBus);
+        LoadingState loading   = new LoadingState(assets, eventBus);
+        MainMenuState menu     = new MainMenuState(eventBus);
         DialogueState dialogue = new DialogueState(eventBus);
-        NavigationState nav = new NavigationState(eventBus);
-        GameState gameState = new GameState(eventBus);
+        NavigationState nav    = new NavigationState(eventBus);
+        GameState gameState    = new GameState(eventBus);
 
         // ---- Registro no ServiceLocator ----
         ServiceLocator.put(EventBus.class, eventBus);
@@ -42,7 +43,6 @@ public final class GameModule {
         ServiceLocator.put(AssetRepositoryImpl.class, assets);
         ServiceLocator.put(LoadingState.class, loading);
         ServiceLocator.put(MainMenuState.class, menu);
-        ServiceLocator.put(HudState.class, hud);
         ServiceLocator.put(DialogueState.class, dialogue);
         ServiceLocator.put(NavigationState.class, nav);
         ServiceLocator.put(GameState.class, gameState);

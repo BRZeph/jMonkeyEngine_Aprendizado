@@ -11,18 +11,9 @@ public class Player extends Character {
 //    private Guild guild;         // referência à guilda
 //    private List<Quest> activeQuests;
 
-
-    public Player(Vector3f position, Quaternion rotation, String name, int level, int hp, int mp, float speed, float height) {
-        super(position, rotation, name, level, hp, mp, speed, height);
-        this.register();
-    }
-
-    public boolean isAlive() {
-        return hp > 0;
-    }
-
-    @Override
-    public boolean register() {
-        return GameEntityRepository.register(this);
+    public Player(Vector3f position, Quaternion rotation, String name,
+                  CharacterStats stats,
+                  float height, float weight, float jumpForce) {
+        super(position, rotation, name, stats, height, weight, jumpForce);
     }
 }

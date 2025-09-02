@@ -5,46 +5,34 @@ import com.jme3.math.Vector3f;
 
 public abstract class Character extends GameEntity {
     protected String name;
-    protected int level;
-    protected int hp;
-    protected int mp;
-    protected float speed;
+    protected CharacterStats stats; // encapsula level, hp, mp, speed, runningSpeed, maxSeeDistance
     protected float height;
-
-    public Character(Vector3f position, Quaternion rotation,
-                     String name, int level, int hp, int mp, float speed, float height) {
+    protected float weight;
+    protected float jumpForce;
+    /*
+        Talvez encapsular características físicas como height, weight e jumpForce em CharacterPhysicsStats.
+     */
+    public Character(Vector3f position, Quaternion rotation, String name,
+                     CharacterStats stats,
+                     float height, float weight, float jumpForce) {
         super(position, rotation);
         this.name = name;
-        this.level = level;
-        this.hp = hp;
-        this.mp = mp;
-        this.speed = speed;
+        this.stats = stats;
         this.height = height;
+        this.weight = weight;
+        this.jumpForce = jumpForce;
     }
 
-    // getters/setters
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public int getLevel() { return level; }
-    public void setLevel(int level) { this.level = level; }
-
-    public int getHp() { return hp; }
-    public void setHp(int hp) { this.hp = hp; }
-
-    public int getMp() { return mp; }
-    public void setMp(int mp) { this.mp = mp; }
-
-    public boolean isAlive() {
-        return hp > 0;
+    public boolean isAlive(){
+        return stats.getHp() > 0;
     }
 
-    public float getSpeed() {
-        return speed;
+    public String getName() {
+        return name;
     }
 
-    public void setSpeed(float speed) {
-        this.speed = speed;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public float getHeight() {
@@ -53,5 +41,29 @@ public abstract class Character extends GameEntity {
 
     public void setHeight(float height) {
         this.height = height;
+    }
+
+    public float getWeight() {
+        return weight;
+    }
+
+    public void setWeight(float weight) {
+        this.weight = weight;
+    }
+
+    public float getJumpForce() {
+        return jumpForce;
+    }
+
+    public void setJumpForce(float jumpForce) {
+        this.jumpForce = jumpForce;
+    }
+
+    public CharacterStats getStats() {
+        return stats;
+    }
+
+    public void setStats(CharacterStats stats) {
+        this.stats = stats;
     }
 }

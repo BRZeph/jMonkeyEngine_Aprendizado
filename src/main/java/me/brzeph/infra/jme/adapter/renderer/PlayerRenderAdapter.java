@@ -5,11 +5,11 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import me.brzeph.core.domain.entity.Player;
 
-public class JmePlayerRenderer {
+public class PlayerRenderAdapter {
 
     private final Node rootNode;
 
-    public JmePlayerRenderer(Node rootNode) {
+    public PlayerRenderAdapter(Node rootNode) {
         this.rootNode = rootNode;
     }
 

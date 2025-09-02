@@ -1,0 +1,39 @@
+game_project/
+│
+├── assets/                  # Contém todos os recursos do jogo
+│   ├── models/              # Modelos 3D (corpos, veículos, personagens, etc.)
+│   │   ├── characters/      # Modelos de personagens
+│   │   ├── environments/    # Modelos de cenários
+│   │   ├── props/           # Objetos do jogo (móveis, árvores, etc.)
+│   │   └── vehicles/        # Modelos de veículos, se houver
+│   │
+│   ├── textures/            # Texturas para modelos, ambientes e outros
+│   │   ├── characters/      # Texturas de personagens
+│   │   ├── environments/    # Texturas de cenários
+│   │   ├── props/           # Texturas de objetos e itens
+│   │   └── ui/              # Texturas da interface do usuário
+│   │
+│   ├── sounds/              # Áudios (músicas, efeitos sonoros)
+│   │   ├── music/           # Música de fundo
+│   │   ├── sfx/             # Efeitos sonoros
+│   │   └── dialogue/        # Diálogos, se aplicável
+│   │
+│   ├── scripts/             # Scripts de configuração ou inicialização (se necessário)
+│   │   ├── ai/              # Scripts de IA, se houver
+│   │   └── game_logic/      # Lógica do jogo (configurações iniciais, estados do jogo)
+│   │
+│   ├── shaders/             # Shaders personalizados (se houver)
+│   ├── animations/          # Animações para personagens, objetos, etc.
+│   └── fonts/               # Fontes usadas na interface do usuário
+│
+├── source/                  # Código fonte do jogo (classes Java)
+│   ├── game/                # Lógica do jogo (jogador, inimigos, missões, etc.)
+│   ├── world/               # Mapeamento e objetos do mundo
+│   ├── ui/                  # Lógica da interface do usuário
+│   ├── audio/               # Controle do áudio do jogo
+│   └── physics/             # Física do jogo
+│
+├── build/                   # Arquivos gerados durante o processo de build
+│   └── (arquivos compilados)
+│
+└── lib/                     # Dependências externas (bibliotecas, JARs, etc.)

@@ -19,4 +19,17 @@ public class EventBus {
         var list = handlers.getOrDefault(event.getClass(), List.of());
         for (Consumer<?> c : list) ((Consumer<T>) c).accept(event);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("EventBus{\n");
+        handlers.forEach((key, list) -> {
+            sb.append("  Event type: ").append(key.getSimpleName())
+                    .append(", handlers count: ").append(list.size()).append("\n");
+        });
+        sb.append("}");
+        return sb.toString();
+    }
+
 }

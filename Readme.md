@@ -1,0 +1,1 @@
+Este repo será apenas para desenvolver os sistemas, depois irei adaptar para multiplayer.

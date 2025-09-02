@@ -31,27 +31,8 @@ public final class WorldLoader {
                 CollisionShapeFactory.createMeshShape(floor), 0f
         );
         floor.addControl(floorPhy);
+        floorPhy.setUserObject("terrain");
         bullet.getPhysicsSpace().add(floorPhy);
-
-        //        // Criar caixa (paralelepípedo)
-//        Box ground = new Box(30f, 0.05f, 30f); // metade das dimensões (60, 0.1, 60)
-//        Geometry geom = new Geometry("ground", ground);
-//
-//        // Material simples (pode trocar por textura depois)
-//        Material mat = new Material(assets, "Common/MatDefs/Light/Lighting.j3md");
-//        mat.setBoolean("UseMaterialColors", true);
-//        mat.setColor("Diffuse", ColorRGBA.Green);
-//        mat.setColor("Ambient", ColorRGBA.Green.mult(0.3f));
-//        geom.setMaterial(mat);
-//
-//        // Colocar no mundo
-//        geom.setLocalTranslation(0, -0.05f, 0); // alinhar no eixo Y
-//        root.attachChild(geom);
-//
-//        // Física estática (massa = 0)
-//        RigidBodyControl rbc = new RigidBodyControl(0f);
-//        geom.addControl(rbc);
-//        bullet.getPhysicsSpace().add(rbc);
     }
 
     private static Geometry createFloor(float xSize, float zSize, AssetManager assets) {
@@ -67,45 +48,30 @@ public final class WorldLoader {
         return geo;
     }
 
-    public static void load(AssetManager assets, Node root, BulletAppState bullet, Camera cam) {
-        int patchSize = 65;
-        int size = 512;
+    public static TerrainQuad createTerrain(BulletAppState physics, Node root, AssetManager assetManager) {
+        TerrainQuad terrain = getTerrainQuad();
 
-        AbstractHeightMap heightmap = null;
-        try {
-            heightmap = new HillHeightMap(size, 40, 20, 60);
-            heightmap.load();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        TerrainQuad terrain = new TerrainQuad("terrain", patchSize, size + 1, heightmap.getHeightMap());
-        terrain.setLocalTranslation(0, -100, 0);
-        terrain.setLocalScale(2f, 1f, 2f);
-
-        Material mat = new Material(assets, "Common/MatDefs/Terrain/Terrain.j3md");
-        Texture tex = assets.loadTexture(new TextureKey("Textures/Terrain/splat/grass.jpg", false));
-        tex.setWrap(Texture.WrapMode.Repeat);
-        mat.setTexture("Tex1", tex);
-        mat.setFloat("Tex1Scale", 64f);
+        // material simples (sem depender do test-data)
+        Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        mat.setBoolean("UseMaterialColors", true);
+        mat.setColor("Ambient", ColorRGBA.DarkGray);
+        mat.setColor("Diffuse", ColorRGBA.Gray);
         terrain.setMaterial(mat);
 
-        // LOD para otimizar renderização
-        TerrainLodControl control = new TerrainLodControl(terrain, cam);
-        terrain.addControl(control);
+        // colisão
+        RigidBodyControl terrainPhy = new RigidBodyControl(
+                CollisionShapeFactory.createMeshShape(terrain), 0f
+        );
+        terrain.addControl(terrainPhy);
+        terrainPhy.setUserObject("terrain");
+        physics.getPhysicsSpace().add(terrainPhy);
 
-        // adiciona ao rootNode para aparecer na cena
         root.attachChild(terrain);
 
-        // adiciona física estática (massa = 0)
-        CollisionShape shape = CollisionShapeFactory.createMeshShape(terrain);
-        RigidBodyControl rbc = new RigidBodyControl(shape, 0f);
-        terrain.addControl(rbc);
-
-        bullet.getPhysicsSpace().add(rbc);
+        return terrain;
     }
 
-    public static TerrainQuad createTerrain(BulletAppState physics, AssetManager assetManager) {
+    private static TerrainQuad getTerrainQuad() {
         int size = 513; // 2^n + 1
         AbstractHeightMap heightMap;
         try {
@@ -128,21 +94,6 @@ public final class WorldLoader {
         // posicione/escale como preferir
         terrain.setLocalTranslation(0, -5, 0);
         terrain.setLocalScale(2f, 0.7f, 2f); // ↑ aumenta/↓ diminui o relevo (eixo Y)
-
-        // material simples (sem depender do test-data)
-        Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        mat.setBoolean("UseMaterialColors", true);
-        mat.setColor("Ambient", ColorRGBA.DarkGray);
-        mat.setColor("Diffuse", ColorRGBA.Gray);
-        terrain.setMaterial(mat);
-
-        // colisão
-        RigidBodyControl terrainPhy = new RigidBodyControl(
-                CollisionShapeFactory.createMeshShape(terrain), 0f
-        );
-        terrain.addControl(terrainPhy);
-        physics.getPhysicsSpace().add(terrainPhy);
-
         return terrain;
     }
 }

@@ -1,105 +1,76 @@
 package me.brzeph.app.systems;
 
-import com.jme3.app.Application;
-import com.jme3.asset.AssetManager;
-import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
-import com.jme3.bullet.control.BetterCharacterControl;
-import com.jme3.material.Material;
-import com.jme3.math.ColorRGBA;
-import com.jme3.math.FastMath;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
-import com.jme3.renderer.queue.RenderQueue;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.shape.Box;
-import com.jme3.scene.shape.Cylinder;
+import me.brzeph.core.domain.entity.CharacterStats;
 import me.brzeph.core.domain.entity.Player;
+import me.brzeph.core.factory.PlayerFactory;
 import me.brzeph.core.service.PlayerService;
 import me.brzeph.infra.events.EventBus;
-import me.brzeph.infra.events.PlayerJumpEvent;
-import me.brzeph.infra.events.PlayerWalkEvent;
-import me.brzeph.infra.jme.adapter.audio.JmePlayerAudio;
+import me.brzeph.infra.events.entities.player.PlayerJumpEvent;
+import me.brzeph.infra.events.entities.player.PlayerRunEvent;
+import me.brzeph.infra.events.entities.player.PlayerWalkEvent;
+import me.brzeph.infra.jme.adapter.audio.PlayerAudioAdapter;
 import me.brzeph.infra.jme.adapter.physics.CharacterPhysicsAdapter;
-import me.brzeph.infra.jme.adapter.renderer.JmePlayerRenderer;
-import me.brzeph.infra.jme.adapter.utils.InputAction;
+import me.brzeph.infra.jme.adapter.renderer.PlayerRenderAdapter;
 import me.brzeph.infra.jme.adapter.utils.InputState;
 import me.brzeph.infra.repository.GameEntityRepository;
 
-import java.util.HashMap;
-import java.util.Map;
+import static me.brzeph.infra.constants.PlayerConstants.PLAYER_WALK_SPEED;
+import static me.brzeph.infra.constants.PlayerConstants.PLAYER_RUN_SPEED;
 
 public class PlayerSystem {
 
     private final EventBus bus;
-    private final PlayerService playerService;
+    private final Node root;
     private final CharacterPhysicsAdapter physicsAdapter;
-    private final JmePlayerRenderer playerRenderer;
-    private final JmePlayerAudio playerAudio;
+    private final PlayerRenderAdapter playerRenderer;
+    private final PlayerAudioAdapter playerAudio;
+    private final PlayerFactory playerFactory;
     private Spatial playerSpatial;
-    private Node playerNode;
     private Player player;
     private Vector3f walkDir;
-    private boolean movingForward = false;
-    private boolean movingBackward = false;
-    private boolean movingLeft = false;
-    private boolean movingRight = false;
+    private boolean movingForward = false;   // PROBABLY SHOULD REFACTOR THIS INSIDE THE PLAYER.CLASS
+    private boolean movingBackward = false;  // PROBABLY SHOULD REFACTOR THIS INSIDE THE PLAYER.CLASS
+    private boolean movingLeft = false;      // PROBABLY SHOULD REFACTOR THIS INSIDE THE PLAYER.CLASS
+    private boolean movingRight = false;     // PROBABLY SHOULD REFACTOR THIS INSIDE THE PLAYER.CLASS
+    private boolean chatOpen = false;
 
-    public PlayerSystem(EventBus bus,
-                        CharacterPhysicsAdapter physicsAdapter,
-                        JmePlayerRenderer playerRenderer,
-                        JmePlayerAudio playerAudio,
-                        Application app) {
+    private Camera cam;
+
+    public PlayerSystem(
+            Node root,
+            EventBus bus,
+            CharacterPhysicsAdapter physicsAdapter,
+            PlayerRenderAdapter playerRenderer,
+            PlayerAudioAdapter playerAudio,
+            PlayerFactory playerFactory
+    ) {
+        this.root = root;
         this.bus = bus;
-        this.playerService  = new PlayerService();
         this.physicsAdapter = physicsAdapter;
         this.playerRenderer = playerRenderer;
         this.playerAudio = playerAudio;
-        initialize(app);
         walkDir = new Vector3f();
+        this.playerFactory = playerFactory;
+        initialize();
     }
 
-    private void initialize(Application app) {
+    private void initialize() {
         bus.subscribe(PlayerWalkEvent.class, this::onWalkAction);
         bus.subscribe(PlayerJumpEvent.class, this::onJumpAction);
-    }
-
-    public void update(float tpf, Camera cam) {
-        /*
-        tratar updates dentro dos eventos, se for update sem evento tratar aqui.
-         */
-        walkDir = playerService.calculateWalkDir(
-                cam, player,
-                movingForward, movingBackward,
-                movingLeft, movingRight
-        );
-        if(movingForward || movingBackward || movingLeft || movingRight) {
-            physicsAdapter.moveCharacter(player, walkDir);
-        } else {
-            physicsAdapter.moveCharacter(player, new Vector3f(0,0,0));
-        }
-    }
-
-    private void onJumpAction(PlayerJumpEvent playerJumpEvent) {
-        if(player == null) return;
-        switch (playerJumpEvent.getInputState()) {
-            case PRESSED:
-                physicsAdapter.jumpCharacter(player);
-//                playerAudio.playJumpSound();
-                break;
-
-            case RELEASED:
-                // Para quando for fazer salto proporcional ao tempo segurado.
-                break;
-        }
+        bus.subscribe(PlayerRunEvent.class , this::onTriggerRunAction);
+        spawnPlayer();
     }
 
     private void onWalkAction(PlayerWalkEvent event) {
-        Player player = (Player) GameEntityRepository.findById(event.getPlayerId());
+        Player player = (Player) GameEntityRepository.findById(event.playerId());
         if (player == null) return;
-        boolean state = event.getInputState() == InputState.PRESSED || event.getInputState() == InputState.HOLDING;
-        switch (event.getDirection()) {
+        boolean state = event.inputState() == InputState.PRESSED || event.inputState() == InputState.HOLDING;
+        switch (event.direction()) {
             case FORWARD:
                 movingForward = state;
                 break;
@@ -115,37 +86,70 @@ public class PlayerSystem {
         }
     }
 
-    public void spawnPlayer(Player player, AssetManager assetManager, Node root) {
-        final float hitBoxSize = player.getHeight()/2;
-        /*
-        Box cria hitBoxSize para cima e hitBoxSize para baixo, usar metade do tamanho do player.
-        Dentro da física usar o tamanho inteiro do player.
-         */
-        playerNode = new Node(player.getId());
-        Box bodyBox = new Box(0.3f, hitBoxSize, 0.3f);
-        Geometry bodyGeo = new Geometry("Body", bodyBox);
-        Material m = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        m.setColor("Color", ColorRGBA.Orange);
-        bodyGeo.setMaterial(m);
-        bodyGeo.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
-        bodyGeo.setLocalTranslation(0, hitBoxSize, 0);
-        playerNode.attachChild(bodyGeo);
-        playerNode.setLocalTranslation(0, 0, 0);
-        physicsAdapter.registerCharacter(player, playerNode);
-        this.playerSpatial = playerNode;
-        root.attachChild(playerNode);
-        this.player = player;
+    private void onJumpAction(PlayerJumpEvent playerJumpEvent) {
+        if(player == null) return;
+        switch (playerJumpEvent.inputState()) {
+            case PRESSED:
+                if(physicsAdapter.jumpCharacter(player)) playerAudio.playSoundAt(player, "cartoon_jump");
+                break;
+
+            case RELEASED:
+                // Para quando for fazer salto proporcional ao tempo segurado.
+                break;
+        }
+    }
+
+    private void onTriggerRunAction(PlayerRunEvent playerRunEvent) {
+        if(player.getStats().isRunning()){
+            player.getStats().setSpeed(PLAYER_WALK_SPEED);
+        } else {
+            player.getStats().setSpeed(PLAYER_RUN_SPEED);
+        }
+    }
+
+    public void update(float tpf) {
+        boolean stopMovement = chatOpen;
+        if (stopMovement) {
+            movingForward = false;
+            movingBackward = false;
+            movingLeft = false;
+            movingRight = false;
+        }
+        walkDir = PlayerService.calculateWalkDir(
+                cam, player,
+                movingForward, movingBackward,
+                movingLeft, movingRight
+        );
+        physicsAdapter.moveCharacter(player, walkDir); // sempre; será ZERO se sem input
+    }
+
+    public void spawnPlayer() {
+        this.player = new Player(
+                new Vector3f(0, 3, 0),
+                new Quaternion(0, 0, 0, 1),
+                "Player1",
+                new CharacterStats(1, 1, 1, PLAYER_WALK_SPEED, 30f, 2f
+                ),
+                1.8f,
+                80f,
+                500f
+        );
+        this.playerSpatial = playerFactory.setupCharacter(player, root);
     }
 
     public Spatial getPlayerSpatial() {
         return playerSpatial;
     }
 
-    public Node getPlayerNode() {
-        return playerNode;
-    }
-
     public Player getPlayer() {
         return player;
+    }
+
+    public void setCam(Camera cam) {
+        this.cam = cam;
+    }
+
+    public void inventoryJustToggled(){
+        this.chatOpen = !this.chatOpen;
     }
 }

@@ -4,24 +4,32 @@ import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.bullet.BulletAppState;
-import com.jme3.input.ChaseCamera;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
-import com.jme3.renderer.Camera;
 import com.jme3.scene.Node;
 import com.jme3.terrain.geomipmap.TerrainQuad;
 import me.brzeph.app.systems.*;
 import me.brzeph.bootstrap.ServiceLocator;
 import me.brzeph.core.domain.entity.Player;
+import me.brzeph.core.domain.entity.enemies.behaviour.GameStateContext;
+import me.brzeph.core.domain.entity.enemies.melee.impl.Goblin;
+import me.brzeph.core.factory.MonsterFactory;
+import me.brzeph.core.factory.PlayerFactory;
+import me.brzeph.core.service.LocalLoopbackChatTransport;
 import me.brzeph.infra.events.EventBus;
+import me.brzeph.infra.events.entities.enemies.MonsterSpawnEvent;
 import me.brzeph.infra.jme.adapter.JmeInput;
-import me.brzeph.infra.jme.adapter.audio.JmePlayerAudio;
+import me.brzeph.infra.jme.adapter.audio.MonsterAudioAdapter;
+import me.brzeph.infra.jme.adapter.audio.PlayerAudioAdapter;
 import me.brzeph.infra.jme.adapter.physics.CharacterPhysicsAdapter;
-import me.brzeph.infra.jme.adapter.renderer.JmePlayerRenderer;
+import me.brzeph.infra.jme.adapter.renderer.GUIRenderAdapter;
+import me.brzeph.infra.jme.adapter.renderer.MonsterRenderAdapter;
+import me.brzeph.infra.jme.adapter.renderer.PlayerRenderAdapter;
 import me.brzeph.infra.jme.factory.WorldLoader;
+
+import java.util.List;
 
 public class GameState extends BaseAppState {
     /*
@@ -57,14 +65,14 @@ public class GameState extends BaseAppState {
     // ---- Core (injeções) ----
     private JmeInput input;
     private final EventBus bus;
-    private Camera cam;
+    private final GameStateContext gameStateContext;
 
     // ---- Systems ----
     private PlayerSystem playerSystem;
-    private CombatSystem combatSystem;
-    private QuestSystem questSystem;
-    private TimeSystem timeSystem;
-    private SaveSystem saveSystem;
+    private MonsterSystem monsterSystem;
+    private CameraSystem cameraSystem;
+    private GUISystem guiSystem;
+    private ChatSystem chatSystem;
 
     // ---- Runtime refs ----
     private BulletAppState bullet;
@@ -74,13 +82,9 @@ public class GameState extends BaseAppState {
     public GameState(EventBus bus) {
         this.bus = bus;
         this.bullet = new BulletAppState();
-//        bullet.setDebugEnabled(true);
-    }
-
-    @Override
-    public void update(float tpf) {
-        playerSystem.update(tpf, cam);
-        bullet.update(tpf);
+        // Armazenar instâncias utilizadas no GameState para intercomunicação sistemática.
+        this.gameStateContext = GameStateContext.get();
+        bullet.setDebugEnabled(false);
     }
 
     @Override
@@ -89,10 +93,16 @@ public class GameState extends BaseAppState {
 
         initCore(sapp);
         initSystems(sapp);
-        initPlayer(); // Before calling initCamera();
-        initWorld(sapp);
-        initCamera(sapp);
+        initWorld(sapp); // TODO: create WorldSystem or similar and refactor this.
         initInputs(sapp);
+    }
+
+    @Override
+    public void update(float tpf) {
+        chatSystem.update(tpf);
+        playerSystem.update(tpf);
+        monsterSystem.update(tpf);
+        guiSystem.update(tpf);
     }
 
     @Override
@@ -119,73 +129,65 @@ public class GameState extends BaseAppState {
         input.bindGameplayMappings();
     }
 
-    private void initPlayer() {
-        playerSystem.spawnPlayer(
-                new Player(
-                        new Vector3f(0, 3, 0),
-                        new Quaternion(0, 0, 0, 0),
-                        "bauticababau, falou o meu amor, bau bau bau",
-                        1,
-                        1,
-                        1,
-                        5,
-                        1.8f
-                ),
-                getApplication().getAssetManager(),
-                root
-        );
-    }
-
-    private void initCamera(SimpleApplication app) {
-        this.cam = app.getCamera();
-        ServiceLocator.put(Camera.class, cam);
-        // Config inicial da câmera (FOV, near/far, aspect ratio, etc.)
-        cam.setFrustumPerspective(60f, (float) cam.getWidth() / cam.getHeight(), 0.1f, 1000f);
-
-        app.getFlyByCamera().setEnabled(false); // Fazer câmera em terceira pessoa
-        ChaseCamera chase = new ChaseCamera(app.getCamera(), playerSystem.getPlayerSpatial(), app.getInputManager());
-        chase.setDefaultDistance(10f);
-        chase.setLookAtOffset(new Vector3f(0, 1.6f, 0));
-        chase.setMaxDistance(20f);
-        chase.setMinDistance(3f);
-        chase.setRotationSpeed(2.5f);
-    }
-
     private void initSystems(Application app) {
-//        // ---- Core services (puro Java) ----
-//        CombatService combatService  = new CombatService();
-//        QuestService questService    = new QuestService();
-//        LootService lootService      = new LootService();
-//        PathService pathService      = new PathService();
 //        // ---- Systems (app layer) ----
-//        CombatSystem combatSystem = new CombatSystem(combatService, renderer, audio, eventBus);
-//        QuestSystem  questSystem  = new QuestSystem(questService, eventBus);
-//        TimeSystem   timeSystem   = new TimeSystem(eventBus);
-//        SaveSystem   saveSystem   = new SaveSystem(savePort, assets, eventBus);
+        CharacterPhysicsAdapter characterPhysics = new CharacterPhysicsAdapter(bullet);
+        ServiceLocator.put(CharacterPhysicsAdapter.class, characterPhysics);
         playerSystem = new PlayerSystem(
-                bus, new CharacterPhysicsAdapter(bullet),
-                new JmePlayerRenderer(root), new JmePlayerAudio(app.getAssetManager()),
-                app
+                root, bus, characterPhysics,
+                new PlayerRenderAdapter(root), new PlayerAudioAdapter(app.getAssetManager()),
+                new PlayerFactory(app.getAssetManager(), characterPhysics)
         );
-        combatSystem = new CombatSystem();
-        questSystem  = new QuestSystem();
-        timeSystem   = new TimeSystem();
-        saveSystem   = new SaveSystem();
+        monsterSystem = new MonsterSystem(
+                root, bus, characterPhysics,
+                new MonsterRenderAdapter(root), new MonsterAudioAdapter(app.getAssetManager()),
+                new MonsterFactory(app.getAssetManager(), characterPhysics)
+        );
+        cameraSystem = new CameraSystem(
+                playerSystem.getPlayerSpatial(),
+                (SimpleApplication) app
+        );
+        guiSystem = new GUISystem(
+                bus,
+                new GUIRenderAdapter((SimpleApplication) app)
+        );
+        chatSystem = new ChatSystem(
+                bus,
+                guiSystem.getUi(),
+                playerSystem
+        );
+
+        playerSystem.setCam(cameraSystem.getCam());
+        getStateManager().attach(cameraSystem);
+        // Wire all systems here so that one system can call another.
+        // PS: avoid having different systems calling each other since it's a violation of SRP and SOLID.
+        // PS2: though it should be avoided, the spaghetti is sometimes acceptable.
+        gameStateContext.put(PlayerSystem.class, playerSystem);
+        gameStateContext.put(MonsterSystem.class, monsterSystem);
+        gameStateContext.put(CameraSystem.class, cameraSystem);
+        gameStateContext.put(ChatSystem.class, chatSystem);
+        gameStateContext.put(EventBus.class, bus);
+
+        List<Player> playerList = List.of(playerSystem.getPlayer()); // Deixando mais fácil para tornar multiplayer depois.
+        gameStateContext.putList(Player.class, playerList);
+
+        MonsterSystem.initMonster(bus); // Eventualmente será substituído por initSpawners()
+        // e colocado dentro do MonsterSystem.initialize().
     }
 
-        private void initWorld(SimpleApplication sapp) {
-            initLighting();
-            WorldLoader.loadFlatWorld(
-                    sapp.getAssetManager(),
-                    root,
-                    bullet
-            );
-            this.terrain = WorldLoader.createTerrain(
-                    bullet,
-                    sapp.getAssetManager()
-            );
-            root.attachChild(terrain);
-        }
+    private void initWorld(SimpleApplication sapp) {
+        initLighting();
+        WorldLoader.loadFlatWorld(
+                sapp.getAssetManager(),
+                root,
+                bullet
+        );
+        this.terrain = WorldLoader.createTerrain(
+                bullet,
+                root,
+                sapp.getAssetManager()
+        );
+    }
 
     private void initLighting() {
         root.addLight(new AmbientLight(ColorRGBA.White.mult(0.3f)));
@@ -196,13 +198,13 @@ public class GameState extends BaseAppState {
     }
 
     private void clean() {
-        // desmontagem ordenada
         if (bullet != null) {
             getStateManager().detach(bullet);
             bullet = null;
         }
-        // HUD é opcional remover aqui se ele for exclusivo da gameplay
-        HudState hud = getStateManager().getState(HudState.class);
-        if (hud != null) getStateManager().detach(hud);
+        if (cameraSystem != null) {
+            getStateManager().detach(cameraSystem);
+            cameraSystem = null;
+        }
     }
 }

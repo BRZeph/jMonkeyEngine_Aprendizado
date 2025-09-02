@@ -5,11 +5,11 @@ import com.jme3.audio.AudioData;
 import com.jme3.audio.AudioNode;
 import me.brzeph.core.domain.entity.Player;
 
-public class JmePlayerAudio {
+public class PlayerAudioAdapter {
 
     private final AssetManager assetManager;
 
-    public JmePlayerAudio(AssetManager assetManager) {
+    public PlayerAudioAdapter(AssetManager assetManager) {
         this.assetManager = assetManager;
     }
 
@@ -17,7 +17,7 @@ public class JmePlayerAudio {
      * Toca um som simples para o player.
      */
     public void playSound(String soundFile) {
-        AudioNode audio = new AudioNode(assetManager, soundFile, AudioData.DataType.Buffer);
+        AudioNode audio = new AudioNode(assetManager, "assets/sounds/entities/" + soundFile + ".wav", AudioData.DataType.Buffer);
         audio.setPositional(false); // 2D sound (global)
         audio.setLooping(false);
         audio.play();
@@ -27,7 +27,7 @@ public class JmePlayerAudio {
      * Toca som posicional na posição do player.
      */
     public void playSoundAt(Player player, String soundFile) {
-        AudioNode audio = new AudioNode(assetManager, soundFile, AudioData.DataType.Buffer);
+        AudioNode audio = new AudioNode(assetManager, "assets/sounds/entities/" + soundFile + ".wav", AudioData.DataType.Buffer);
         audio.setPositional(true);
         audio.setLocalTranslation(player.getPosition());
         audio.setLooping(false);

@@ -7,14 +7,16 @@ import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import me.brzeph.core.domain.entity.Player;
 import me.brzeph.infra.events.EventBus;
-import me.brzeph.infra.events.PlayerJumpEvent;
-import me.brzeph.infra.events.PlayerWalkEvent;
+import me.brzeph.infra.events.chat.ChatScroll;
+import me.brzeph.infra.events.chat.ChatToggle;
+import me.brzeph.infra.events.entities.player.PlayerJumpEvent;
+import me.brzeph.infra.events.entities.player.PlayerRunEvent;
+import me.brzeph.infra.events.entities.player.PlayerWalkEvent;
+import me.brzeph.infra.events.entities.ui.InventoryToggleEvent;
 import me.brzeph.infra.jme.adapter.utils.InputAction;
 import me.brzeph.infra.jme.adapter.utils.InputState;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static me.brzeph.infra.jme.adapter.utils.InputAction.*;
@@ -40,16 +42,16 @@ public class JmeInput implements ActionListener {
     public void bindGameplayMappings() {
         InputManager inputManager = app.getInputManager();
 
-        inputManager.addMapping(JUMP.getName(), new KeyTrigger(KeyInput.KEY_SPACE));
-        inputManager.addMapping(MOVE_FORWARD.getName(), new KeyTrigger(KeyInput.KEY_W));
-        inputManager.addMapping(MOVE_BACKWARD.getName(), new KeyTrigger(KeyInput.KEY_S));
-        inputManager.addMapping(MOVE_LEFT.getName(), new KeyTrigger(KeyInput.KEY_A));
-        inputManager.addMapping(MOVE_RIGHT.getName(), new KeyTrigger(KeyInput.KEY_D));
+        for(InputAction ia : InputAction.values()){
+            inputManager.addMapping(ia.getName(), new KeyTrigger(ia.getInput()));
+        }
 
-        inputManager.addListener(this,
-                JUMP.getName(),
-                MOVE_FORWARD.getName(), MOVE_BACKWARD.getName(),
-                MOVE_LEFT.getName(), MOVE_RIGHT.getName());
+        inputManager.addListener(
+                this,
+                Arrays.stream(InputAction.values())
+                        .map(InputAction::getName)
+                        .toArray(String[]::new)
+        );
     }
 
 
@@ -58,6 +60,8 @@ public class JmeInput implements ActionListener {
         InputAction action = actionMap.get(name);
         if (action == null) return;
 
+        action.press();
+
         InputState inputState = getInputState(name, isPressed);
 
         if (action == InputAction.JUMP) {
@@ -65,6 +69,14 @@ public class JmeInput implements ActionListener {
         } else if (action == InputAction.MOVE_FORWARD || action == InputAction.MOVE_BACKWARD ||
                 action == InputAction.MOVE_LEFT || action == InputAction.MOVE_RIGHT) {
             bus.post(new PlayerWalkEvent(player.getId(), action.getDirection(), inputState));
+        } else if (action == TRIGGER_RUN){
+            bus.post(new PlayerRunEvent(player.getId(), inputState));
+        } else if (action == TOGGLE_INVENTORY){
+            bus.post(new InventoryToggleEvent(player.getId(), action.getPressedState()));
+        } else if (action == TOGGLE_CHAT) {
+            bus.post(new ChatToggle(action.getPressedState()));
+        } else if (action == CHAT_PG_DOWN || action == CHAT_PG_UP) {
+            bus.post(new ChatScroll(action.getDirection()));
         }
     }
 

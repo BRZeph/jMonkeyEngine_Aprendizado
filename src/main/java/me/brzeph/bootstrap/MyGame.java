@@ -5,24 +5,12 @@ import com.jme3.system.AppSettings;
 import me.brzeph.infra.jme.appstate.LoadingState;
 
 public class MyGame extends SimpleApplication {
-    /*
-    começo da execução
-    MyGame.main()
-    MyGame.simpleInitApp()
-        GameModule.wire(this); // inicializa tudo.
-        stateManager.attach() // muda a tela para LoadingState.
-    LoadingState.Initialize()
-        LoadingState.onEnable()
-        getStateManager().attach(gameFactory.create()); // Muda para a tela GameState (ela contém GameFactory).
-        getStateManager().detach(this); // Sai da tela atual.
-    GameState.Initialize()
-        GameState.onEnable()
-     */
 
     public static void main(String[] args) {
         AppSettings cfg = new AppSettings(true);
         cfg.setTitle("My RPG");
         cfg.setVSync(true);
+        cfg.setFrameRate(60);
         cfg.setResolution(1600, 900);
         cfg.setSamples(4); // MSAA
         cfg.setGammaCorrection(true);
@@ -35,8 +23,7 @@ public class MyGame extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        // Bootstrap: registra dependências e entra no primeiro estado
-        GameModule.wire(this); // faz o wiring de todas as dependências no ServiceLocator.
+        GameModule.wire(this);
         stateManager.attach(ServiceLocator.get(LoadingState.class));
     }
 }

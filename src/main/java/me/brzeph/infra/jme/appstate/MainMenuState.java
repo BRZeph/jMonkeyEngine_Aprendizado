@@ -54,7 +54,7 @@ public class MainMenuState extends BaseAppState {
 
         // ---- Fundo ----
         bg = new Picture("bg");
-        bg.setImage(assets, "Interface/bg_menu.png", true);
+        bg.setImage(assets, "assets/textures/interface/bg_menu.png", true);
         bg.setWidth(camW);
         bg.setHeight(camH);
         bg.setPosition(0, 0);
@@ -62,7 +62,7 @@ public class MainMenuState extends BaseAppState {
 
 //        // Vinheta leve por cima (PNG com alpha)
 //        vignette = new Picture("vignette");
-//        vignette.setImage(assets, "Interface/vignette.png", true);
+//        vignette.setImage(assets, "interface/vignette.png", true);
 //        vignette.setWidth(camW);
 //        vignette.setHeight(camH);
 //        vignette.setPosition(0, 0);

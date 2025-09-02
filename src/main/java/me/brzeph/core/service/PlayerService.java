@@ -3,35 +3,27 @@ package me.brzeph.core.service;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import me.brzeph.core.domain.entity.Player;
-import me.brzeph.infra.jme.adapter.utils.InputAction;
 
 public class PlayerService {
-    public Vector3f calculateWalkDir(
+    public static Vector3f calculateWalkDir(
             Camera cam, Player player,
             boolean movingForward, boolean movingBackward,
             boolean movingLeft, boolean movingRight
     ) {
-        Vector3f walkDir = new Vector3f();
-        walkDir.set(0, 0, 0);
-        if (movingForward) {
-            walkDir.addLocal(cam.getDirection());
-        }
-        if (movingBackward) {
-            walkDir.addLocal(cam.getDirection().negate());
-        }
-        if (movingLeft) {
-            walkDir.addLocal(cam.getLeft());
-        }
-        if (movingRight) {
-            walkDir.addLocal(cam.getLeft().negate());
-        }
-        walkDir.normalizeLocal().multLocal(player.getSpeed());
-        walkDir.setY(0);
-        return walkDir;
-    }
+        Vector3f fwd  = cam.getDirection().clone(); fwd.y = 0f;  fwd.normalizeLocal();
+        Vector3f left = cam.getLeft().clone();      left.y = 0f; left.normalizeLocal();
 
-    public boolean canJump(Player player) {
-        return player.getHp() > 0; // TODO: Checar se está tocando o chão.
+        Vector3f wish = new Vector3f();
+        if (movingForward)  wish.addLocal(fwd);
+        if (movingBackward) wish.subtractLocal(fwd);
+        if (movingLeft)     wish.addLocal(left);
+        if (movingRight)    wish.subtractLocal(left);
+
+        if (wish.lengthSquared() > 0f) {
+            wish.normalizeLocal();
+            wish.multLocal(player.getStats().getSpeed());
+        }
+        return wish;
     }
 }
 

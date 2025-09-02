@@ -2,6 +2,7 @@ package me.brzeph.infra.repository;
 
 import me.brzeph.core.domain.entity.GameEntity;
 import me.brzeph.core.domain.entity.Player;
+import me.brzeph.core.domain.entity.enemies.Monster;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -24,25 +25,27 @@ public class GameEntityRepository {
     private static long lastNPC = 0;
 
     private static String constructEntityIdString(GameEntity entity) {
+        /*
+        Classes que extender Monster não serão aceitas dinamicamente aqui, isso é intencional.
+        É necessário colocar a classe aqui.
+         */
         switch (entity){
             case Player pl -> {
                 lastUser++;
                 return "PLAYER_".concat(String.valueOf(lastUser));
             }
-//            case NPC npc -> {
-//                lastNPC++;
-//                return "NPC_".concat(String.valueOf(lastNPC));
-//            }
+            case Monster ms -> { // Também implementar classes que extends Monster.
+                lastMonster++;
+                return "MONSTER_".concat(String.valueOf(lastMonster));
+            }
             default -> throw new RuntimeException("Unhandled entity type: " + entity.getClass().getName());
         }
-
     }
 
-    public static boolean register(GameEntity entity) {
+    public static String register(GameEntity entity) {
         String id = constructEntityIdString(entity);
         entities.put(id, entity);
-        entity.setId(id);
-        return true; // Leaving space for validations before registering user.
+        return id;
     }
 
     public static GameEntity findById(String id) {
