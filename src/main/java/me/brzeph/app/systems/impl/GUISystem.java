@@ -1,18 +1,18 @@
-package me.brzeph.app.systems;
+package me.brzeph.app.systems.impl;
 
+import com.jme3.app.SimpleApplication;
+import me.brzeph.app.systems.System;
 import me.brzeph.infra.events.EventBus;
 import me.brzeph.infra.events.entities.ui.InventoryToggleEvent;
 import me.brzeph.infra.jme.adapter.renderer.GUIRenderAdapter;
 
-public class GUISystem {
+public class GUISystem extends System {
 
-    private final EventBus bus;
     private final GUIRenderAdapter ui;
     private boolean inventoryOpen = false;
 
-    public GUISystem(EventBus bus, GUIRenderAdapter adapter) {
-        this.bus = bus;
-        this.ui  = adapter;
+    public GUISystem() {
+        this.ui  = new GUIRenderAdapter(getApp());
         initialize();
     }
 
@@ -24,15 +24,20 @@ public class GUISystem {
 //        bus.subscribe(HotbarHideEvent.class, e -> ui.setHotbarVisible(false));
 //        bus.subscribe(MinimapShowEvent.class, e -> ui.setMinimapVisible(true));
 //        bus.subscribe(MinimapHideEvent.class, e -> ui.setMinimapVisible(false));
-        bus.subscribe(InventoryToggleEvent.class, this::InventoryToggleEvent);
         ui.buildStaticUI();           // cria hotbar, minimap, inventory (invisível)
         ui.setInventoryVisible(false);
         ui.setHotbarVisible(true);
         ui.setMinimapVisible(true);
     }
 
+    @Override
     public void update(float tpf) {
         ui.updateIfViewportChanged();
+    }
+
+    @Override
+    public void subscribe() {
+        getBus().subscribe(InventoryToggleEvent.class, this::InventoryToggleEvent);
     }
 
     private void InventoryToggleEvent(InventoryToggleEvent inventoryToggleEvent) {

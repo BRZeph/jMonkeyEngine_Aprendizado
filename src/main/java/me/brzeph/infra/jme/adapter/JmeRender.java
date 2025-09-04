@@ -9,11 +9,11 @@ import com.jme3.material.Material;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 
-public class JmeRenderer {
+public class JmeRender {
     private final Application app;
     private final AssetManager assets;
 
-    public JmeRenderer(Application app) {
+    public JmeRender(Application app) {
         this.app = app;
         this.assets = app.getAssetManager();
     }

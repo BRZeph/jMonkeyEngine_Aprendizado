@@ -1,16 +1,7 @@
 package me.brzeph.bootstrap;
 
 import com.jme3.app.SimpleApplication;
-import com.jme3.renderer.Camera;
-import me.brzeph.app.systems.*;
-import me.brzeph.core.factory.CharacterFactory;
-import me.brzeph.core.factory.PlayerFactory;
-import me.brzeph.core.service.*;
 import me.brzeph.infra.events.EventBus;
-import me.brzeph.infra.jme.adapter.JmeAudio;
-import me.brzeph.infra.jme.adapter.physics.CharacterPhysicsAdapter;
-import me.brzeph.infra.jme.adapter.physics.JmeWorldPhysics;
-import me.brzeph.infra.jme.adapter.JmeRenderer;
 import me.brzeph.infra.jme.appstate.*;
 import me.brzeph.infra.persistence.AssetRepositoryImpl;
 import me.brzeph.infra.persistence.SaveGameRepositoryJson;

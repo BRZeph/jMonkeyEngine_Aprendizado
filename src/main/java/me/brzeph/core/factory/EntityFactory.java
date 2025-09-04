@@ -12,18 +12,18 @@ import com.jme3.scene.shape.Line;
 import com.jme3.util.BufferUtils;
 import me.brzeph.core.domain.entity.Character;
 import me.brzeph.core.domain.entity.Player;
-import me.brzeph.infra.jme.adapter.physics.CharacterPhysicsAdapter;
+import me.brzeph.infra.jme.adapter.physics.EntityPhysicsAdapter;
 
-public abstract class CharacterFactory {
+public class EntityFactory {
 
     public enum ShapeType { CYLINDER, BOX, SPHERE }
 
     protected static final float DEFAULT_RADIUS = 0.3f;
 
     protected final AssetManager assetManager;
-    protected final CharacterPhysicsAdapter physicsAdapter;
+    protected final EntityPhysicsAdapter physicsAdapter;
 
-    public CharacterFactory(AssetManager assetManager, CharacterPhysicsAdapter physicsAdapter) {
+    public EntityFactory(AssetManager assetManager, EntityPhysicsAdapter physicsAdapter) {
         this.assetManager = assetManager;
         this.physicsAdapter = physicsAdapter;
     }

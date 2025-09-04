@@ -16,7 +16,7 @@ import java.util.Map;
 
 import static me.brzeph.infra.constants.EnemiesConstants.EPS;
 
-public class CharacterPhysicsAdapter {
+public class EntityPhysicsAdapter {
 
     // Constantes úteis
     private static final float DEFAULT_RADIUS = 0.3f;       // raio padrão do BCC
@@ -28,7 +28,7 @@ public class CharacterPhysicsAdapter {
     private final BulletAppState bullet;
     private final Map<String, BetterCharacterControl> controls = new HashMap<>();
 
-    public CharacterPhysicsAdapter(BulletAppState bullet) {
+    public EntityPhysicsAdapter(BulletAppState bullet) {
         this.bullet = bullet;
     }
 

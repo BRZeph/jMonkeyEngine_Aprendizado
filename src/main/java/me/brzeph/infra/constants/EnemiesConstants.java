@@ -1,6 +1,8 @@
 package me.brzeph.infra.constants;
 
 import com.jme3.math.Vector3f;
+import me.brzeph.app.systems.impl.PlayerSystem;
+import me.brzeph.bootstrap.ServiceLocator;
 import me.brzeph.core.domain.entity.Player;
 import me.brzeph.core.domain.entity.enemies.MonsterBehaviour;
 import me.brzeph.core.domain.entity.enemies.behaviour.*;
@@ -68,9 +70,10 @@ SelectorNode (root)
     └── post(MonsterIdleEvent)
 
          */
-        GameStateContext btc = GameStateContext.getContext();
-        EventBus bus = btc.get(EventBus.class);
-        List<Player> playerList = btc.getList(Player.class);
+        EventBus bus = ServiceLocator.get(EventBus.class);
+        List<Player> playerList = List.of( // Deixando como lista para facilitar multiplayer.
+                ((PlayerSystem)me.brzeph.app.systems.System.getSystem(PlayerSystem.class)).getPlayer()
+        );
         boolean debug = false;
         Node root = new SelectorNode(List.of(
 
@@ -192,9 +195,5 @@ SelectorNode (root)
         ));
 
         return new BehaviourTree(root);
-    }
-
-    public static BehaviourTree getBehaviourTree(MonsterBehaviour type) {
-        return BEHAVIOUR_TREE_MAP.get(type);
     }
 }

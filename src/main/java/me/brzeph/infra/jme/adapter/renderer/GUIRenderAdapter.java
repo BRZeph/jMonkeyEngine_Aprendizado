@@ -18,8 +18,9 @@ import com.jme3.scene.shape.Line;
 import com.jme3.scene.shape.Quad;
 import me.brzeph.core.domain.chat.ChatChannel;
 import me.brzeph.core.domain.chat.ChatMessage;
+import me.brzeph.infra.jme.adapter.JmeRender;
 
-public class GUIRenderAdapter {
+public class GUIRenderAdapter{
 
     private final Node guiRoot;
     private final AssetManager assets;
@@ -57,7 +58,7 @@ public class GUIRenderAdapter {
         overlayLayer.setQueueBucket(RenderQueue.Bucket.Gui);
 
         // cria widgets
-        createHotbar(8);               // 8 slots (exemplo)
+        createHotbar(8);          // 8 slots (exemplo)
         createMinimap();               // quadrado preto com borda branca
         createInventory();             // painel central
 

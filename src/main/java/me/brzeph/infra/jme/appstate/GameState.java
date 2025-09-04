@@ -3,6 +3,7 @@ package me.brzeph.infra.jme.appstate;
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.BaseAppState;
+import com.jme3.asset.AssetManager;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
@@ -10,21 +11,17 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.terrain.geomipmap.TerrainQuad;
-import me.brzeph.app.systems.*;
+import me.brzeph.app.systems.System;
+import me.brzeph.app.systems.impl.*;
 import me.brzeph.bootstrap.ServiceLocator;
-import me.brzeph.core.domain.chat.ChatChannel;
 import me.brzeph.core.domain.entity.Player;
-import me.brzeph.core.domain.entity.enemies.behaviour.GameStateContext;
-import me.brzeph.core.factory.MonsterFactory;
-import me.brzeph.core.factory.PlayerFactory;
 import me.brzeph.infra.events.EventBus;
+import me.brzeph.infra.jme.adapter.JmeAudio;
 import me.brzeph.infra.jme.adapter.JmeInput;
+import me.brzeph.infra.jme.adapter.JmeRender;
 import me.brzeph.infra.jme.adapter.audio.MonsterAudioAdapter;
-import me.brzeph.infra.jme.adapter.audio.PlayerAudioAdapter;
-import me.brzeph.infra.jme.adapter.physics.CharacterPhysicsAdapter;
-import me.brzeph.infra.jme.adapter.renderer.GUIRenderAdapter;
-import me.brzeph.infra.jme.adapter.renderer.PlayerRenderAdapter;
-import me.brzeph.infra.jme.factory.WorldLoader;
+import me.brzeph.core.factory.WorldFactory;
+import me.brzeph.infra.jme.adapter.physics.EntityPhysicsAdapter;
 
 import java.util.List;
 
@@ -62,7 +59,6 @@ public class GameState extends BaseAppState {
     // ---- Core (injeções) ----
     private JmeInput input;
     private final EventBus bus;
-    private final GameStateContext gameStateContext;
 
     // ---- Systems ----
     private PlayerSystem playerSystem;
@@ -80,9 +76,7 @@ public class GameState extends BaseAppState {
     public GameState(EventBus bus) {
         this.bus = bus;
         this.bullet = new BulletAppState();
-        // Armazenar instâncias utilizadas no GameState para intercomunicação sistemática.
-        this.gameStateContext = GameStateContext.getContext();
-        bullet.setDebugEnabled(false);
+        bullet.setDebugEnabled(true);
     }
 
     @Override
@@ -99,6 +93,7 @@ public class GameState extends BaseAppState {
     public void update(float tpf) {
         chatSystem.update(tpf);
         playerSystem.update(tpf);
+        cameraSystem.update(tpf);
         monsterSystem.update(tpf);
         guiSystem.update(tpf);
         itemSystem.update(tpf);
@@ -129,64 +124,30 @@ public class GameState extends BaseAppState {
     }
 
     private void initSystems(Application app) {
-        CharacterPhysicsAdapter characterPhysics = new CharacterPhysicsAdapter(bullet);
-        ServiceLocator.put(CharacterPhysicsAdapter.class, characterPhysics);
-        guiSystem = new GUISystem(
-                bus,
-                new GUIRenderAdapter((SimpleApplication) app)
-        );
-        playerSystem = new PlayerSystem(
-                root, bus, characterPhysics,
-                new PlayerRenderAdapter(root), new PlayerAudioAdapter(app.getAssetManager()),
-                new PlayerFactory(app.getAssetManager(), characterPhysics)
-        );
-        chatSystem = new ChatSystem(
-                bus,
-                guiSystem.getUi(),
-                playerSystem
-        );
-        monsterSystem = new MonsterSystem(
-                root, bus, characterPhysics,
-                new MonsterAudioAdapter(app.getAssetManager()),
-                new MonsterFactory(app.getAssetManager(), characterPhysics)
-        );
-        cameraSystem = new CameraSystem(
-                playerSystem.getPlayerSpatial(),
-                (SimpleApplication) app
-        );
-        gameStateContext.put(ChatSystem.class, chatSystem);
-        itemSystem = new ItemSystem(
-                root, bus,
-                characterPhysics,
-                new MonsterFactory(app.getAssetManager(), characterPhysics)
-        );
+        ServiceLocator.put(EntityPhysicsAdapter.class, new EntityPhysicsAdapter(bullet));
+        ServiceLocator.put(Node.class, root);
+        ServiceLocator.put(EventBus.class, bus);
+        ServiceLocator.put(SimpleApplication.class, (SimpleApplication) app);
+        ServiceLocator.put(JmeAudio.class, new JmeAudio(app));
+        ServiceLocator.put(JmeRender.class, new JmeRender(app));
+        ServiceLocator.put(AssetManager.class, app.getAssetManager());
 
-        playerSystem.setCam(cameraSystem.getCam());
-        getStateManager().attach(cameraSystem);
-        // Wire all systems here so that one system can call another.
-        // PS: avoid having different systems calling each other since it's a violation of SRP and SOLID.
-        // PS2: though it should be avoided, the spaghetti is sometimes acceptable.
-//        gameStateContext.put(ChatSystem.class, chatSystem);
-        gameStateContext.put(PlayerSystem.class, playerSystem);
-        gameStateContext.put(MonsterSystem.class, monsterSystem);
-        gameStateContext.put(CameraSystem.class, cameraSystem);
-        gameStateContext.put(EventBus.class, bus);
-
-        List<Player> playerList = List.of(playerSystem.getPlayer()); // Deixando mais fácil para tornar multiplayer depois.
-        gameStateContext.putList(Player.class, playerList);
-
-        MonsterSystem.initMonster(bus); // Eventualmente será substituído por initSpawners()
-        // e colocado dentro do MonsterSystem.initialize().
+        guiSystem = new GUISystem();
+        playerSystem = new PlayerSystem();
+        cameraSystem = new CameraSystem(); // Antes de playerSystem.
+        chatSystem = new ChatSystem();
+        monsterSystem = new MonsterSystem();
+        itemSystem = new ItemSystem();
     }
 
     private void initWorld(SimpleApplication sapp) {
         initLighting();
-        WorldLoader.loadFlatWorld(
+        WorldFactory.loadFlatWorld(
                 sapp.getAssetManager(),
                 root,
                 bullet
         );
-        this.terrain = WorldLoader.createTerrain(
+        this.terrain = WorldFactory.createTerrain(
                 bullet,
                 root,
                 sapp.getAssetManager()
@@ -206,9 +167,6 @@ public class GameState extends BaseAppState {
             getStateManager().detach(bullet);
             bullet = null;
         }
-        if (cameraSystem != null) {
-            getStateManager().detach(cameraSystem);
-            cameraSystem = null;
-        }
+        System.cleanUp();
     }
 }

@@ -1,5 +1,7 @@
-package me.brzeph.app.systems;
+package me.brzeph.app.systems.impl;
 
+import me.brzeph.app.systems.System;
+import me.brzeph.bootstrap.ServiceLocator;
 import me.brzeph.core.domain.chat.ChatChannel;
 import me.brzeph.core.domain.chat.ChatMessage;
 import me.brzeph.core.domain.chat.ChatTransport;
@@ -15,8 +17,7 @@ import me.brzeph.infra.jme.adapter.utils.InputAction;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChatSystem {
-    private final EventBus bus;
+public class ChatSystem extends System {
     private final PlayerSystem playerSystem;
     private final GUIRenderAdapter ui;
     private final ChatTransport transport;
@@ -25,23 +26,26 @@ public class ChatSystem {
     private boolean open = true;
     private int scroll = 0; // 0 = últimas linhas; aumenta ao rolar p/ cima
 
-    public ChatSystem(EventBus bus, GUIRenderAdapter ui, PlayerSystem playerSystem) {
-        this.bus = bus;
-        this.ui = ui;
-        this.playerSystem = playerSystem;
-        this.transport =  new LocalLoopbackChatTransport(
+    public ChatSystem() {
+        ui = ((GUISystem) getSystem(GUISystem.class)).getUi();
+        playerSystem = (PlayerSystem) getSystem(PlayerSystem.class);
+        transport =  new LocalLoopbackChatTransport(
                 () -> playerSystem.getPlayer().getName(),
                 () -> playerSystem.getPlayer().getPosition(),
                 () -> List.of(playerSystem.getPlayer()), // hoje 1 player, amanhã N, trocar para lista de players global
                 100f // raio LOCAL, metros
         );
-        this.transport.setOnBroadcast(this::onBroadcast);
+        transport.setOnBroadcast(this::onBroadcast);
         initialize();
     }
 
+    @Override
+    public void subscribe() {
+        getBus().subscribe(ChatToggle.class, this::chatToggle);
+        getBus().subscribe(ChatScroll.class, this::chatScroll);
+    }
+
     public void initialize() {
-        bus.subscribe(ChatToggle.class, this::chatToggle);
-        bus.subscribe(ChatScroll.class, this::chatScroll);
         ui.buildChatPanel();
         ui.chatSetOpen(true);
         ui.chatSetMessages(List.of());

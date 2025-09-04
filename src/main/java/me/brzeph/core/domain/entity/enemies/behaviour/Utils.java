@@ -1,6 +1,5 @@
 package me.brzeph.core.domain.entity.enemies.behaviour;
 
-import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.PhysicsRayTestResult;
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
@@ -8,7 +7,7 @@ import com.jme3.scene.Spatial;
 import me.brzeph.bootstrap.ServiceLocator;
 import me.brzeph.core.domain.entity.Character;
 import me.brzeph.core.domain.util.RandomUtils;
-import me.brzeph.infra.jme.adapter.physics.CharacterPhysicsAdapter;
+import me.brzeph.infra.jme.adapter.physics.EntityPhysicsAdapter;
 
 import java.util.List;
 
@@ -36,7 +35,7 @@ public class Utils {
         if (angle > FastMath.DEG_TO_RAD * (fovDeg * 0.5f)) return false;
 
         // Raycast físico
-        CharacterPhysicsAdapter adapter = ServiceLocator.get(CharacterPhysicsAdapter.class);
+        EntityPhysicsAdapter adapter = ServiceLocator.get(EntityPhysicsAdapter.class);
         List<PhysicsRayTestResult> results = adapter.rayTest(sourcePos, targetPos);
 
         // Nada bateu → caminho livre
@@ -88,7 +87,7 @@ public class Utils {
             float probeUp, float probeDown,
             Character self // para filtrar self nos raycasts
     ) {
-        CharacterPhysicsAdapter adapter = ServiceLocator.get(CharacterPhysicsAdapter.class);
+        EntityPhysicsAdapter adapter = ServiceLocator.get(EntityPhysicsAdapter.class);
 
         for (int i = 0; i < maxTries; i++) {
             Vector3f candidateXZ = RandomUtils.getRandomIdlePosition(origin, maxDst);
@@ -119,7 +118,7 @@ public class Utils {
     /** Ray para baixo em XZ do candidato, partindo de originY+probeUp até originY-probeDown. */
     public static GroundHit raycastGround(Vector3f candidateXZ, float originY,
                                           float probeUp, float probeDown,
-                                          CharacterPhysicsAdapter adapter) {
+                                          EntityPhysicsAdapter adapter) {
         Vector3f from = new Vector3f(candidateXZ.x, originY + probeUp, candidateXZ.z);
         Vector3f to   = new Vector3f(candidateXZ.x, originY - probeDown, candidateXZ.z);
 
@@ -146,7 +145,7 @@ public class Utils {
 
     /** Ray em linha reta no plano (ombro) para ver se há parede entre origem e destino. */
     public static boolean clearPathXZ(Vector3f fromPos, Vector3f toPos,
-                                      CharacterPhysicsAdapter adapter, Character self) {
+                                      EntityPhysicsAdapter adapter, Character self) {
         final float SHOULDER = 1.0f; // altura do “ombro” para evitar chão
         Vector3f a = new Vector3f(fromPos.x, fromPos.y + SHOULDER, fromPos.z);
         Vector3f b = new Vector3f(toPos.x,   toPos.y   + SHOULDER, toPos.z);

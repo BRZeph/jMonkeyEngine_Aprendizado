@@ -1,28 +1,22 @@
-package me.brzeph.infra.jme.factory;
+package me.brzeph.core.factory;
 
 import com.jme3.asset.AssetManager;
-import com.jme3.asset.TextureKey;
 import com.jme3.bullet.BulletAppState;
-import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
-import com.jme3.renderer.Camera;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
-import com.jme3.terrain.geomipmap.TerrainLodControl;
 import com.jme3.terrain.geomipmap.TerrainQuad;
 import com.jme3.terrain.heightmap.AbstractHeightMap;
 import com.jme3.terrain.heightmap.HillHeightMap;
-import com.jme3.texture.Texture;
-import me.brzeph.infra.jme.adapter.physics.JmeWorldPhysics;
 
-public final class WorldLoader {
+public final class WorldFactory {
 
-    private WorldLoader() {} // utilitário estático
+    private WorldFactory() {} // utilitário estático
 
     public static void loadFlatWorld(AssetManager assets, Node root, BulletAppState bullet) {
         Geometry floor = createFloor(100, 100, assets);

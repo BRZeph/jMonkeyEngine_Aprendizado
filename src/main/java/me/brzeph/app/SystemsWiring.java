@@ -1,9 +1,9 @@
 package me.brzeph.app;
 
-import me.brzeph.app.systems.CombatSystem;
-import me.brzeph.app.systems.QuestSystem;
-import me.brzeph.app.systems.TimeSystem;
-import me.brzeph.app.systems.SaveSystem;
+import me.brzeph.app.systems.impl.CombatSystem;
+import me.brzeph.app.systems.impl.QuestSystem;
+import me.brzeph.app.systems.impl.TimeSystem;
+import me.brzeph.app.systems.impl.SaveSystem;
 import me.brzeph.infra.events.EventBus;
 
 public final class SystemsWiring {
