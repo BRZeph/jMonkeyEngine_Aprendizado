@@ -32,6 +32,10 @@ public class CharacterPhysicsAdapter {
         this.bullet = bullet;
     }
 
+    public BetterCharacterControl getControl(String controlName) {
+        return controls.get(controlName);
+    }
+
     public void registerCharacter(Character character, Spatial model) {
         if (bullet == null || character == null || model == null) return;
 

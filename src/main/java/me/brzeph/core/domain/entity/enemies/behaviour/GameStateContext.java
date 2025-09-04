@@ -35,7 +35,7 @@ public class GameStateContext {
         return (List<T>) REGISTRY.getOrDefault(type, Collections.emptyList());
     }
 
-    public static GameStateContext get() {
+    public static GameStateContext getContext() {
         if (context == null) {
             context = new GameStateContext();
         }

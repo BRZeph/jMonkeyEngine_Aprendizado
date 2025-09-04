@@ -307,7 +307,7 @@ public class GUIRenderAdapter {
         // Área disponível
         float w = ((Quad)((Geometry)chatPanel.getChild("fill")).getMesh()).getWidth();
         float h = ((Quad)((Geometry)chatPanel.getChild("fill")).getMesh()).getHeight();
-        float pad = 6f;
+        float pad = 25f;
         float maxWidth = Math.max(1f, w - 2*pad);
 
         // desenha de baixo pra cima
@@ -385,8 +385,10 @@ public class GUIRenderAdapter {
 
     private String formatLine(ChatMessage m) {
         // timestamp HH:mm:ss
-        String time = java.time.LocalTime.ofNanoOfDay(java.time.Duration.ofMillis(m.timestampMillis()).toNanos())
-                .withNano(0).toString();
+        long millis = m.timestampMillis() % 86400000;  // Isso garante que o valor esteja dentro de 24 horas
+        String time = java.time.LocalTime.ofNanoOfDay(java.time.Duration.ofMillis(millis).toNanos())
+                .withNano(0)
+                .toString();
         return switch (m.channel()) {
             case SERVER  -> String.format("[%s] [SERVER] %s", time, m.text());
             case GLOBAL  -> String.format("[%s] [%s] %s", time, m.from(), m.text());

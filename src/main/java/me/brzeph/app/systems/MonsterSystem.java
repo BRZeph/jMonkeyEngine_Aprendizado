@@ -2,6 +2,7 @@ package me.brzeph.app.systems;
 
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
+import me.brzeph.core.domain.chat.ChatChannel;
 import me.brzeph.core.domain.entity.Player;
 import me.brzeph.core.domain.entity.enemies.Monster;
 import me.brzeph.core.domain.entity.enemies.behaviour.GameStateContext;
@@ -13,7 +14,6 @@ import me.brzeph.infra.events.entities.enemies.MonsterSpawnEvent;
 import me.brzeph.infra.events.entities.enemies.MonsterWalkEvent;
 import me.brzeph.infra.jme.adapter.audio.MonsterAudioAdapter;
 import me.brzeph.infra.jme.adapter.physics.CharacterPhysicsAdapter;
-import me.brzeph.infra.jme.adapter.renderer.MonsterRenderAdapter;
 import me.brzeph.infra.repository.GameEntityRepository;
 
 import java.util.ArrayList;
@@ -23,9 +23,9 @@ public class MonsterSystem {
     private final Node root;
     private final EventBus bus;
     private final CharacterPhysicsAdapter physicsAdapter;
-    private final MonsterRenderAdapter renderAdapter;
     private final MonsterAudioAdapter audioAdapter;
     private final MonsterFactory monsterFactory;
+    private final GameStateContext gameStateContext;
 
     private final List<Monster> monsterList = new ArrayList<>();
 
@@ -33,7 +33,6 @@ public class MonsterSystem {
             Node root,
             EventBus bus,
             CharacterPhysicsAdapter physicsAdapter,
-            MonsterRenderAdapter renderAdapter,
             MonsterAudioAdapter audioAdapter,
             MonsterFactory monsterFactory
     ) {
@@ -41,13 +40,13 @@ public class MonsterSystem {
         this.bus = bus;
         this.physicsAdapter = physicsAdapter;
         this.audioAdapter = audioAdapter;
-        this.renderAdapter = renderAdapter;
         this.monsterFactory = monsterFactory;
+        this.gameStateContext = GameStateContext.getContext();
         initialize();
     }
 
     public static void initMonster(EventBus bus) { // Eventualmente será substituído por initSpawners().
-        Player pl = GameStateContext.get().getList(Player.class).getFirst();
+        Player pl = GameStateContext.getContext().getList(Player.class).getFirst();
         for (int i = 0; i < 5; i ++) {
             bus.post(
                     new MonsterSpawnEvent(
@@ -85,6 +84,7 @@ public class MonsterSystem {
 
     private void onSpawnEvent(MonsterSpawnEvent monsterSpawnEvent) {
         Monster monster = monsterSpawnEvent.monster();
+        gameStateContext.get(ChatSystem.class).send(ChatChannel.GLOBAL, "", "Spawning monster: " + monster.getId());
         monsterFactory.setupCharacter(monster, root);
         monsterList.add(monster);
         audioAdapter.playSoundAt(monster, "spawn_sound");

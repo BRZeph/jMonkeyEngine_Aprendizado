@@ -3,8 +3,8 @@ package me.brzeph.infra.repository;
 import me.brzeph.core.domain.entity.GameEntity;
 import me.brzeph.core.domain.entity.Player;
 import me.brzeph.core.domain.entity.enemies.Monster;
+import me.brzeph.core.domain.item.DroppedItem;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,6 +23,7 @@ public class GameEntityRepository {
     private static long lastUser = 0;
     private static long lastMonster = 0;
     private static long lastNPC = 0;
+    private static long lastItemStack = 0;
 
     private static String constructEntityIdString(GameEntity entity) {
         /*
@@ -37,6 +38,10 @@ public class GameEntityRepository {
             case Monster ms -> { // Também implementar classes que extends Monster.
                 lastMonster++;
                 return "MONSTER_".concat(String.valueOf(lastMonster));
+            }
+            case DroppedItem droppedItem -> {
+                lastItemStack++;
+                return "ITEM_".concat(String.valueOf(lastItemStack));
             }
             default -> throw new RuntimeException("Unhandled entity type: " + entity.getClass().getName());
         }

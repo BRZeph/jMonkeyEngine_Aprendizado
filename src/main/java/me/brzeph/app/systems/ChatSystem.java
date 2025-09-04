@@ -16,13 +16,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ChatSystem {
-    private final EventBus bus;                // opcional; útil p/ outras integrações
+    private final EventBus bus;
     private final PlayerSystem playerSystem;
     private final GUIRenderAdapter ui;
     private final ChatTransport transport;
 
     private final ArrayList<ChatMessage> history = new ArrayList<>();
-    private boolean open = false;
+    private boolean open = true;
     private int scroll = 0; // 0 = últimas linhas; aumenta ao rolar p/ cima
 
     public ChatSystem(EventBus bus, GUIRenderAdapter ui, PlayerSystem playerSystem) {
@@ -43,14 +43,14 @@ public class ChatSystem {
         bus.subscribe(ChatToggle.class, this::chatToggle);
         bus.subscribe(ChatScroll.class, this::chatScroll);
         ui.buildChatPanel();
-        ui.chatSetOpen(false);
+        ui.chatSetOpen(true);
         ui.chatSetMessages(List.of());
     }
 
     private void chatToggle(ChatToggle chatToggle) {
         if (chatToggle.pressedState() == 1 || chatToggle.pressedState() == 3) {
             toggleOpen();
-            playerSystem.inventoryJustToggled();
+//            playerSystem.inventoryJustToggled();
         }
     }
 
@@ -68,9 +68,9 @@ public class ChatSystem {
 
     // === API p/ UI/Input ===
     public void toggleOpen() {
-        open = !open;
-        ui.chatSetOpen(open);
-        if (open) ui.chatSetMessages(visible());
+//        open = !open;
+//        ui.chatSetOpen(open);
+//        if (open) ui.chatSetMessages(visible());
     }
 
     public void scrollUp(int lines) {
@@ -93,9 +93,7 @@ public class ChatSystem {
     // === Callback do transport ===
     private void onBroadcast(ChatBroadcast b) {
         history.add(b.message());
-        // (Opcional) repasse para outros sistemas ouvirem:
-        if (bus != null) bus.post(b);
-
+//        if (bus != null) bus.post(b);
         if (open) ui.chatSetMessages(visible());
         else      ui.chatFlash(); // badge/efeito opcional
     }

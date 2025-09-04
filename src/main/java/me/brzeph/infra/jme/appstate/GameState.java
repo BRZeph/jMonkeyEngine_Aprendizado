@@ -12,20 +12,17 @@ import com.jme3.scene.Node;
 import com.jme3.terrain.geomipmap.TerrainQuad;
 import me.brzeph.app.systems.*;
 import me.brzeph.bootstrap.ServiceLocator;
+import me.brzeph.core.domain.chat.ChatChannel;
 import me.brzeph.core.domain.entity.Player;
 import me.brzeph.core.domain.entity.enemies.behaviour.GameStateContext;
-import me.brzeph.core.domain.entity.enemies.melee.impl.Goblin;
 import me.brzeph.core.factory.MonsterFactory;
 import me.brzeph.core.factory.PlayerFactory;
-import me.brzeph.core.service.LocalLoopbackChatTransport;
 import me.brzeph.infra.events.EventBus;
-import me.brzeph.infra.events.entities.enemies.MonsterSpawnEvent;
 import me.brzeph.infra.jme.adapter.JmeInput;
 import me.brzeph.infra.jme.adapter.audio.MonsterAudioAdapter;
 import me.brzeph.infra.jme.adapter.audio.PlayerAudioAdapter;
 import me.brzeph.infra.jme.adapter.physics.CharacterPhysicsAdapter;
 import me.brzeph.infra.jme.adapter.renderer.GUIRenderAdapter;
-import me.brzeph.infra.jme.adapter.renderer.MonsterRenderAdapter;
 import me.brzeph.infra.jme.adapter.renderer.PlayerRenderAdapter;
 import me.brzeph.infra.jme.factory.WorldLoader;
 
@@ -73,6 +70,7 @@ public class GameState extends BaseAppState {
     private CameraSystem cameraSystem;
     private GUISystem guiSystem;
     private ChatSystem chatSystem;
+    private ItemSystem itemSystem;
 
     // ---- Runtime refs ----
     private BulletAppState bullet;
@@ -83,7 +81,7 @@ public class GameState extends BaseAppState {
         this.bus = bus;
         this.bullet = new BulletAppState();
         // Armazenar instâncias utilizadas no GameState para intercomunicação sistemática.
-        this.gameStateContext = GameStateContext.get();
+        this.gameStateContext = GameStateContext.getContext();
         bullet.setDebugEnabled(false);
     }
 
@@ -103,6 +101,7 @@ public class GameState extends BaseAppState {
         playerSystem.update(tpf);
         monsterSystem.update(tpf);
         guiSystem.update(tpf);
+        itemSystem.update(tpf);
     }
 
     @Override
@@ -130,31 +129,36 @@ public class GameState extends BaseAppState {
     }
 
     private void initSystems(Application app) {
-//        // ---- Systems (app layer) ----
         CharacterPhysicsAdapter characterPhysics = new CharacterPhysicsAdapter(bullet);
         ServiceLocator.put(CharacterPhysicsAdapter.class, characterPhysics);
+        guiSystem = new GUISystem(
+                bus,
+                new GUIRenderAdapter((SimpleApplication) app)
+        );
         playerSystem = new PlayerSystem(
                 root, bus, characterPhysics,
                 new PlayerRenderAdapter(root), new PlayerAudioAdapter(app.getAssetManager()),
                 new PlayerFactory(app.getAssetManager(), characterPhysics)
         );
+        chatSystem = new ChatSystem(
+                bus,
+                guiSystem.getUi(),
+                playerSystem
+        );
         monsterSystem = new MonsterSystem(
                 root, bus, characterPhysics,
-                new MonsterRenderAdapter(root), new MonsterAudioAdapter(app.getAssetManager()),
+                new MonsterAudioAdapter(app.getAssetManager()),
                 new MonsterFactory(app.getAssetManager(), characterPhysics)
         );
         cameraSystem = new CameraSystem(
                 playerSystem.getPlayerSpatial(),
                 (SimpleApplication) app
         );
-        guiSystem = new GUISystem(
-                bus,
-                new GUIRenderAdapter((SimpleApplication) app)
-        );
-        chatSystem = new ChatSystem(
-                bus,
-                guiSystem.getUi(),
-                playerSystem
+        gameStateContext.put(ChatSystem.class, chatSystem);
+        itemSystem = new ItemSystem(
+                root, bus,
+                characterPhysics,
+                new MonsterFactory(app.getAssetManager(), characterPhysics)
         );
 
         playerSystem.setCam(cameraSystem.getCam());
@@ -162,10 +166,10 @@ public class GameState extends BaseAppState {
         // Wire all systems here so that one system can call another.
         // PS: avoid having different systems calling each other since it's a violation of SRP and SOLID.
         // PS2: though it should be avoided, the spaghetti is sometimes acceptable.
+//        gameStateContext.put(ChatSystem.class, chatSystem);
         gameStateContext.put(PlayerSystem.class, playerSystem);
         gameStateContext.put(MonsterSystem.class, monsterSystem);
         gameStateContext.put(CameraSystem.class, cameraSystem);
-        gameStateContext.put(ChatSystem.class, chatSystem);
         gameStateContext.put(EventBus.class, bus);
 
         List<Player> playerList = List.of(playerSystem.getPlayer()); // Deixando mais fácil para tornar multiplayer depois.

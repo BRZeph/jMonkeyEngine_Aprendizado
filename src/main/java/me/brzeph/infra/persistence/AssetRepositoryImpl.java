@@ -26,20 +26,20 @@ public class AssetRepositoryImpl {
     public void preload() {
         // Adapte esta lista aos seus assets reais:
         var fonts = List.of(
-                "Interface/Fonts/Default.fnt",   // jME default
-                "Interface/Fonts/Orbitron.fnt"
+                "Interface/Fonts/Default.fnt"   // jME default
+//                "Interface/Fonts/Orbitron.fnt"
         );
         var mats = List.of(
-                "Common/MatDefs/Misc/Unshaded.j3md",
-                "Materials/MyPBR.j3md"
+                "Common/MatDefs/Misc/Unshaded.j3md"
+//                "Materials/MyPBR.j3md"
         );
         var models = List.of(
-                 "Models/Player/Player.gltf",
-                 "Models/UI/Cursor.j3o"
+//                 "Models/Player/Player.gltf",
+//                 "Models/UI/Cursor.j3o"
         );
         var sounds = List.of(
-                 "Sounds/ui_click.ogg",
-                 "Sounds/music_theme.ogg"
+//                 "Sounds/ui_click.ogg",
+//                 "Sounds/music_theme.ogg"
         );
 
         List<String> ok = new ArrayList<>();
@@ -62,20 +62,20 @@ public class AssetRepositoryImpl {
         }
 
         // Models (apenas cache)
-        for (String mdl : models) {
-            try {
-                Spatial s = assets.loadModel(mdl);
-                if (s != null) ok.add("MODEL:" + mdl); else fail.add("MODEL:" + mdl);
-            } catch (Exception ex) { fail.add("MODEL:" + mdl + " -> " + ex.getMessage()); }
-        }
+//        for (String mdl : models) {
+//            try {
+//                Spatial s = assets.loadModel(mdl);
+//                if (s != null) ok.add("MODEL:" + mdl); else fail.add("MODEL:" + mdl);
+//            } catch (Exception ex) { fail.add("MODEL:" + mdl + " -> " + ex.getMessage()); }
+//        }
 
         // Sounds (carrega como raw, a API concreta fica no adapter de áudio)
-        for (String snd : sounds) {
-            try {
-                assets.loadAudio(snd);
-                ok.add("SND:" + snd);
-            } catch (Exception ex) { fail.add("SND:" + snd + " -> " + ex.getMessage()); }
-        }
+//        for (String snd : sounds) {
+//            try {
+//                assets.loadAudio(snd);
+//                ok.add("SND:" + snd);
+//            } catch (Exception ex) { fail.add("SND:" + snd + " -> " + ex.getMessage()); }
+//        }
 
         log.info(() -> "[Assets PRELOAD] OK=" + ok.size() + " FAIL=" + fail.size());
         if (!fail.isEmpty()) {

@@ -5,7 +5,6 @@ import me.brzeph.core.domain.entity.Player;
 import me.brzeph.core.domain.entity.enemies.MonsterBehaviour;
 import me.brzeph.core.domain.entity.enemies.behaviour.*;
 import me.brzeph.core.domain.entity.enemies.behaviour.node.*;
-import me.brzeph.core.domain.util.RandomUtils;
 import me.brzeph.core.service.MonsterService;
 import me.brzeph.infra.events.EventBus;
 import me.brzeph.infra.events.entities.enemies.MonsterAggroEvent;
@@ -69,7 +68,7 @@ SelectorNode (root)
     └── post(MonsterIdleEvent)
 
          */
-        GameStateContext btc = GameStateContext.get();
+        GameStateContext btc = GameStateContext.getContext();
         EventBus bus = btc.get(EventBus.class);
         List<Player> playerList = btc.getList(Player.class);
         boolean debug = false;

@@ -45,7 +45,7 @@ public class CameraSystem extends BaseAppState {
         chase.setMaxDistance(maxDistance);
         chase.setMinDistance(minDistance);
         chase.setLookAtOffset(lookAtOffset);
-        chase.setRotationSpeed(2.5f);
+        chase.setRotationSpeed(2f);
         chase.setDragToRotate(false);
         chase.setUpVector(Vector3f.UNIT_Y);
         chase.setMinVerticalRotation(-FastMath.HALF_PI + 0.01f);
