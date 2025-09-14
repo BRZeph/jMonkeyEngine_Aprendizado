@@ -1,0 +1,103 @@
+Guia rápido — Composição de Item (MMORPG + jME)
+Documento de referência para relembrar o que é cada parte do modelo de itens. É domínio puro (sem dependência do jME) e conecta com o mundo 3D só quando você quiser materializar um drop.
+1) Visão geral (como as peças se encaixam)
+ItemDefinition: “o tipo” do item (catálogo, imutável). Diz se empilha, se é usável, equipável, se tem durabilidade, etc.
+ItemInstance: “o que o jogador tem” (mutável). Guarda quantidade (stack), durabilidade atual, cargas, cooldown, vínculo, encantos…
+DropHint: dica opcional de como esse item deve aparecer no mundo 3D quando dropado (chave do prefab, raio de coleta, tempo de vida).
+Resolver de prefab: função que converte a chave de DropHint em um EntityType do seu jogo (visual + física).
+2) Identidade e taxonomia
+ItemDefId: identificador do tipo (ex.: "potion_heal_small"). Usado em data files/BD.
+ItemId: identificador único da instância (o item específico na mochila do jogador).
+ItemCategory: classifica para UI/balance/buscas (ex.: MATERIAL, CONSUMABLE, WEAPON…).
+ItemRarity: raridade (ex.: COMMON, RARE…).
+EquipSlot: slots de equipamento válidos (ex.: HEAD, HAND_MAIN, RING…).
+3) Empilhamento
+StackSpec
+maxStack: tamanho máximo por slot (ex.: 1000 para “Gems”).
+rule: regra de compatibilidade entre pilhas (ver StackRule).
+StackRule
+ANY_IF_SAME_DEF: qualquer instância do mesmo tipo empilha (moedas, gemas).
+ONLY_IF_PRISTINE: só empilha se “novo” (durabilidade/cargas cheias, sem vínculo/encanto).
+ONLY_IF_IDENTICAL_STATE: empilha apenas se todo o estado for idêntico (durabilidade, cargas, encantos, vínculo…).
+Dica mental: o empilhamento é decidido por um “fingerprint” calculado na instância conforme a regra.
+4) Vinculação (tradabilidade)
+BindKind
+NONE: nunca vincula.
+BIND_ON_PICKUP: vincula ao coletar.
+BIND_ON_EQUIP: vincula ao equipar.
+BIND_ON_USE: vincula ao usar.
+Efeito: após vincular, você pode bloquear trade/drop/transferência, ou limitar a quem pertence.
+5) Durabilidade
+DurabilitySpec
+maxDurability: valor cheio.
+repairable: se pode ser reparado.
+Uso: armas/armaduras perdem durabilidade; ao chegar a zero, defina a penalidade (quebrado, inutilizável, -stats…).
+6) Usabilidade (consumíveis/ativáveis)
+UseSpec
+actionKey: chave para o seu sistema de efeitos (ex.: “heal_small”).
+targetKind: alvo lógico (SELF, UNIT, GROUND, NONE).
+cooldownMs: tempo de recarga ao usar.
+maxCharges (opcional): número de cargas por unidade.
+Boas práticas
+Cargas são por unidade (não por pilha). Ao gastar todas as cargas, consome 1 unidade do stack.
+Por isso, consumíveis costumam usar ONLY_IF_PRISTINE para empilhar de forma previsível.
+7) Equipável
+EquipSpec
+allowedSlots: em quais slots pode equipar.
+twoHanded: ocupa as duas mãos, se for o caso.
+statModifiers: mapa de modificadores/atributos enquanto equipado (ex.: "ATK" -> 12).
+Uso: validar requisitos na hora de equipar (classe/nível/atributos, se desejar).
+8) Metadados para o mundo 3D
+DropHint (opcional na ItemDefinition)
+worldPrefabKey: chave de asset/prefab que representa o item dropado.
+pickupRadius: raio de coleta.
+lifetimeSeconds: tempo até sumir (0/negativo → infinito, conforme sua política).
+Resolver de prefab
+Função: key (string) → EntityType.
+Deve mapear chaves conhecidas para EntityType específicos e ter um fallback genérico para casos não mapeados.
+9) ItemDefinition (catálogo, imutável)
+O que guarda: identidade (id/nome), categoria/raridade, peso/tradabilidade, BindKind, StackSpec, DurabilitySpec, UseSpec, EquipSpec, DropHint, tags.
+Perguntas que responde
+Empilha? Até quanto? Com que regra?
+É usável? Qual ação/alvo/cooldown/cargas?
+É equipável? Em quais slots? Quais modificadores?
+Tem durabilidade? É reparável?
+Como aparece no mundo (se dropado)?
+Por que imutável: para ser cacheável, serializável e 100% data-driven.
+10) ItemInstance (estado do que o jogador tem)
+Campos típicos: quantity (tamanho do stack), durability, charges, cooldownUntilMs, bound/boundToCharacterId, enchantments.
+Métodos importantes
+stackFingerprint(): string que representa o estado relevante ao empilhamento.
+addToStack(amount): tenta adicionar respeitando maxStack e retorna a sobra.
+split(amount): divide a pilha copiando o estado relevante para a nova instância.
+applyBindIfRequired(characterId, trigger): aplica vínculo conforme regra do tipo.
+consumeCharge(): gasta 1 carga (se houver).
+damageDurability(amount): reduz durabilidade (se houver).
+setCooldown(nowMs) / isOnCooldown(nowMs): controla recarga.
+11) Fluxos comuns (passo a passo)
+Dar item ao jogador: criar ItemInstance(def, quantidade) → tentar empilhar em slots existentes usando fingerprint + addToStack.
+Usar consumível: checar cooldown → consumeCharge() → setCooldown(now) → ao zerar cargas, consumir 1 unidade do stack (e restaurar as cargas da unidade seguinte).
+Equipar: validar slot/requisitos → aplicar statModifiers enquanto equipado → se a regra pedir, applyBindIfRequired(..., BIND_ON_EQUIP).
+Perder durabilidade: chamar damageDurability em eventos relevantes (hit, bloqueio, queda…).
+Vincular: no pickup/use/equip, chamar applyBindIfRequired com o gatilho correspondente.
+Salvar/Carregar: persistir ItemInstance (id, defId, quantidade, durabilidade, cargas, cooldown, vínculo, encantos). No load, resolver a ItemDefinition pelo ItemDefId.
+12) Integração com o mundo 3D (quando necessário)
+DroppedItem (no jME): é a casca 3D que carrega um ItemInstance + metadados (raio, despawn, “quem dropou”).
+Factory/Adapter: usa DropHint.worldPrefabKey → EntityType (seu EntityBlueprint visual+físico)
+Se a chave não estiver mapeada, usar um fallback genérico para garantir que todo item dropado tenha aparência e física válidas.
+13) Boas práticas e pegadinhas
+Separar definição de instância: o catálogo não deve conhecer estado (durabilidade/cargas/cooldown).
+Cargas por unidade: evita confusões de consumíveis em pilhas.
+Tempo injetado: sempre passe nowMs; facilita servidor autoritativo e testes.
+Empilhamento previsível: escolha StackRule adequada (materiais → ANY_IF_SAME_DEF; consumíveis → ONLY_IF_PRISTINE; itens complexos → ONLY_IF_IDENTICAL_STATE).
+Vínculo: defina claramente o que o vínculo bloqueia (trade, drop, correio) e quando é aplicado.
+Enchants/Afixos: se variados, eles entram no fingerprint; pilhas com encantos diferentes não devem empilhar (a não ser que você deseje o contrário e trate explicitamente).
+14) Checklist para criar um novo tipo de item
+Definir ItemDefId, nome, categoria, raridade, peso/tradabilidade.
+Escolher empilhamento: StackSpec(max, rule).
+Se usável: UseSpec(actionKey, targetKind, cooldown, maxCharges?).
+Se equipável: EquipSpec(allowedSlots, twoHanded, statModifiers).
+Se gasta: DurabilitySpec(maxDurability, repairable).
+Se dropa no mundo: DropHint(worldPrefabKey, pickupRadius, lifetimeSeconds).
+(Opcional) Tags para busca/filtragem.
+Publicar no catálogo e, se necessário, mapear worldPrefabKey → EntityType no resolver.

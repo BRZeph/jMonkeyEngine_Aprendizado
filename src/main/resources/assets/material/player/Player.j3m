@@ -1,0 +1,9 @@
+Material Triangle : Common/MatDefs/Misc/Unshaded.j3md {
+    MaterialParameters {
+        Color : 0.20 0.60 1.00 1.00   // RGBA
+    }
+    AdditionalRenderState {
+        FaceCull Off                  // desenha frente e verso (triângulo sem espessura)
+        // Wireframe On               // opcional: modo arame para depurar
+    }
+}

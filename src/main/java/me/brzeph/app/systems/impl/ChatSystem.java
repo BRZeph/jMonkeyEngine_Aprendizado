@@ -1,23 +1,21 @@
 package me.brzeph.app.systems.impl;
 
-import me.brzeph.app.systems.System;
-import me.brzeph.bootstrap.ServiceLocator;
+import com.jme3.renderer.ViewPort;
+import me.brzeph.app.systems.SystemAbs;
 import me.brzeph.core.domain.chat.ChatChannel;
 import me.brzeph.core.domain.chat.ChatMessage;
 import me.brzeph.core.domain.chat.ChatTransport;
-import me.brzeph.core.service.LocalLoopbackChatTransport;
-import me.brzeph.infra.events.EventBus;
+import me.brzeph.app.service.LocalLoopbackChatTransport;
 import me.brzeph.infra.events.chat.ChatBroadcast;
 import me.brzeph.infra.events.chat.ChatScroll;
 import me.brzeph.infra.events.chat.ChatSendRequest;
 import me.brzeph.infra.events.chat.ChatToggle;
 import me.brzeph.infra.jme.adapter.renderer.GUIRenderAdapter;
-import me.brzeph.infra.jme.adapter.utils.InputAction;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChatSystem extends System {
+public class ChatSystem extends SystemAbs {
     private final PlayerSystem playerSystem;
     private final GUIRenderAdapter ui;
     private final ChatTransport transport;
@@ -27,7 +25,8 @@ public class ChatSystem extends System {
     private int scroll = 0; // 0 = últimas linhas; aumenta ao rolar p/ cima
 
     public ChatSystem() {
-        ui = ((GUISystem) getSystem(GUISystem.class)).getUi();
+//        ui = ((GUISystem) getSystem(GUISystem.class)).getUi();
+        ui = new GUIRenderAdapter(getApp());
         playerSystem = (PlayerSystem) getSystem(PlayerSystem.class);
         transport =  new LocalLoopbackChatTransport(
                 () -> playerSystem.getPlayer().getName(),
@@ -39,31 +38,24 @@ public class ChatSystem extends System {
         initialize();
     }
 
-    @Override
-    public void subscribe() {
-        getBus().subscribe(ChatToggle.class, this::chatToggle);
-        getBus().subscribe(ChatScroll.class, this::chatScroll);
-    }
-
     public void initialize() {
         ui.buildChatPanel();
         ui.chatSetOpen(true);
         ui.chatSetMessages(List.of());
     }
 
-    private void chatToggle(ChatToggle chatToggle) {
-        if (chatToggle.pressedState() == 1 || chatToggle.pressedState() == 3) {
-            toggleOpen();
+    public void chatToggle(ChatToggle chatToggle) {
+        toggleOpen();
 //            playerSystem.inventoryJustToggled();
-        }
+
     }
 
-    private void chatScroll(ChatScroll chatScroll) {
-        if (chatScroll.direction() == InputAction.Direction.UP){
-            scrollUp(3);
-        } else {
-            scrollDown(3);
-        }
+    public void chatScroll(ChatScroll chatScroll) {
+//        if (chatScroll.direction() == InputAction.Direction.UP){
+//            scrollUp(3);
+//        } else {
+//            scrollDown(3);
+//        }
     }
 
     public void update(float tpf) {

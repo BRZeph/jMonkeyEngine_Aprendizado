@@ -1,6 +1,6 @@
 package me.brzeph.infra.events.items;
 
-import me.brzeph.core.domain.item.DroppedItem;
+import me.brzeph.core.domain.entity.item.DroppedItem;
 
 public record DropItemEvent(DroppedItem item) {
 }

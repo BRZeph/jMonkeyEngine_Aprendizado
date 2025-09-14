@@ -28,9 +28,11 @@
         <dependency><groupId>org.jmonkeyengine</groupId><artifactId>jme3-terrain</artifactId><version>${jme.version}</version></dependency>
         <dependency><groupId>org.jmonkeyengine</groupId><artifactId>jme3-effects</artifactId><version>${jme.version}</version></dependency>
 
+        <!-- https://mvnrepository.com/artifact/com.github.stephengold/Minie -->
+        <dependency><groupId>com.github.stephengold</groupId><artifactId>Minie</artifactId><version>9.0.1</version></dependency>
         <!-- Física (Bullet) -->
-        <dependency><groupId>org.jmonkeyengine</groupId><artifactId>jme3-bullet</artifactId><version>${jme.bullet.version}</version></dependency>
-        <dependency><groupId>org.jmonkeyengine</groupId><artifactId>jme3-bullet-native</artifactId><version>${jme.bullet.version}</version></dependency>
+<!--        <dependency><groupId>org.jmonkeyengine</groupId><artifactId>jme3-bullet</artifactId><version>${jme.bullet.version}</version></dependency>-->
+<!--        <dependency><groupId>org.jmonkeyengine</groupId><artifactId>jme3-bullet-native</artifactId><version>${jme.bullet.version}</version></dependency>-->
 
         <!-- Plugins de formatos (GLTF/OBJ/OGG etc.) -->
         <dependency><groupId>org.jmonkeyengine</groupId><artifactId>jme3-plugins</artifactId><version>${jme.version}</version></dependency>
@@ -54,8 +56,6 @@
         <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310 -->
         <dependency><groupId>com.fasterxml.jackson.datatype</groupId><artifactId>jackson-datatype-jsr310</artifactId><version>${jackson.version}</version></dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.simsilica/lemur -->
-        <dependency><groupId>com.simsilica</groupId><artifactId>lemur</artifactId><version>1.16.0</version></dependency>
      </dependencies>
 
     <build>

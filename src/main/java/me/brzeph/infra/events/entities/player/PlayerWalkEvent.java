@@ -1,9 +1,8 @@
 package me.brzeph.infra.events.entities.player;
 
-import me.brzeph.infra.jme.adapter.utils.InputAction;
-import me.brzeph.infra.jme.adapter.utils.InputState;
+import me.brzeph.app.service.InputService;
 
-public record PlayerWalkEvent(String playerId, InputAction.Direction direction, InputState inputState) {
+public record PlayerWalkEvent(String playerId, InputService.InputAction letter, boolean isPressed) {
 }
 
 

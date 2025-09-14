@@ -7,116 +7,66 @@ import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
-import me.brzeph.core.domain.entity.Character;
-import me.brzeph.core.domain.entity.Player;
+import me.brzeph.core.domain.entity.CharacterEntity;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import static me.brzeph.infra.constants.EnemiesConstants.EPS;
+import static me.brzeph.core.constants.EnemiesConstants.EPS;
+import static me.brzeph.core.constants.PhysicsConstants.G;
 
 public class EntityPhysicsAdapter {
 
     // Constantes úteis
-    private static final float DEFAULT_RADIUS = 0.3f;       // raio padrão do BCC
-    private static final float DEFAULT_GRAVITY = 10f;     // m/s² (ajuste se quiser)
-    private static final float MAX_CLIMB_ANGLE_DEG = 45f;   // rampa máxima “andável”
     private static final float PROBE_HEIGHT = 1.5f;         // de onde lançar o ray para baixo
     private static final float SLIDE_GAIN = 0.6f;           // 0..1 quanto “escorrega” em rampas proibidas
 
     private final BulletAppState bullet;
-    private final Map<String, BetterCharacterControl> controls = new HashMap<>();
 
     public EntityPhysicsAdapter(BulletAppState bullet) {
         this.bullet = bullet;
     }
 
-    public BetterCharacterControl getControl(String controlName) {
-        return controls.get(controlName);
-    }
+    public void moveCharacter(CharacterEntity characterEntity, Vector3f walkDir) {
+        BetterCharacterControl bcc = (BetterCharacterControl) characterEntity.getControl();
+        if (bcc == null) return;
 
-    public void registerCharacter(Character character, Spatial model) {
-        if (bullet == null || character == null || model == null) return;
-
-        BetterCharacterControl control = new BetterCharacterControl(
-                DEFAULT_RADIUS,
-                character.getHeight(),
-                character.getWeight()
-        );
-
-        // Gravidade e pulo
-        control.setGravity(new Vector3f(0f, -DEFAULT_GRAVITY, 0f));
-        control.setJumpForce(new Vector3f(0f, character.getJumpForce(), 0f));
-
-        model.addControl(control);
-
-        if (character.getPosition() != null) {
-            model.setLocalTranslation(character.getPosition());
-        }
-
-        bullet.getPhysicsSpace().add(control);
-        controls.put(character.getId(), control);
-        model.setUserData("characterId", character.getId()); // userData é para identificar o Spatial.
-        bullet.getPhysicsSpace().add(control);
-        controls.put(character.getId(), control);
-    }
-
-    public void moveCharacter(Character character, Vector3f walkDir) {
-        BetterCharacterControl control = controls.get(character.getId());
-        if (control == null) return;
-
-        Spatial s = control.getSpatial();
+        Spatial s = bcc.getSpatial();
         if (s == null) return;
 
-        // 1) base planar (sua lógica original)
+        // Direção básica no plano XZ
         Vector3f v = (walkDir == null) ? Vector3f.ZERO : walkDir.clone();
         v.y = 0f;
 
-        // 2) ajusta v conforme inclinação do chão
+        // >>> Gravidade efetiva (prioriza a do BCC, senão a global)
+        float gY = getEffectiveGravity(bcc);
+
+        // Ground probe + regras de rampa usando a gravidade efetiva
         GroundHit gh = probeGround(s.getWorldTranslation());
         if (gh != null) {
-            v = applySlopeRules(character, v, gh.normal, DEFAULT_GRAVITY, MAX_CLIMB_ANGLE_DEG, SLIDE_GAIN);
+            v = applySlopeRules(characterEntity, v, gh.normal, gY, SLIDE_GAIN);
         }
 
-        control.setWalkDirection(v);
+        bcc.setWalkDirection(v);
 
-        // 3) olhar/rotação só se houver input tangencial
         if (v.lengthSquared() > EPS) {
-            Vector3f lookDir = v.clone().normalizeLocal();
-            control.setViewDirection(lookDir);
-
-            Quaternion rot = new Quaternion();
-            rot.lookAt(lookDir, Vector3f.UNIT_Y);
+            Vector3f lookDir = v.normalize();
+            bcc.setViewDirection(lookDir);
+            Quaternion rot = new Quaternion().lookAt(lookDir, Vector3f.UNIT_Y);
             s.setLocalRotation(rot);
-            character.setRotation(rot);
+            characterEntity.setRotation(rot);
         }
 
-        character.setPosition(s.getWorldTranslation().clone());
+        characterEntity.setPosition(s.getWorldTranslation().clone());
     }
 
-    public boolean jumpCharacter(Character character) {
-        BetterCharacterControl control = controls.get(character.getId());
+    public boolean jumpCharacter(CharacterEntity characterEntity) {
+        BetterCharacterControl control = (BetterCharacterControl) characterEntity.getControl();
         if (control != null && control.isOnGround()) {
             // Adicionado check isOnGround "redundante" para retornar boolean para o som
             control.jump();
             return true;
         }
         return false;
-    }
-
-    public void removeCharacter(Player player) {
-        BetterCharacterControl control = controls.remove(player.getId());
-        if (control != null) {
-            PhysicsSpace space = bullet.getPhysicsSpace();
-            if (space != null) {
-                space.remove(control);
-            }
-            Spatial s = control.getSpatial();
-            if (s != null) {
-                s.removeControl(control);
-            }
-        }
     }
 
     public List<PhysicsRayTestResult> rayTest(Vector3f from, Vector3f to) {
@@ -131,6 +81,31 @@ public class EntityPhysicsAdapter {
         Vector3f point;
         Vector3f normal;
         float    fraction;
+    }
+
+    private final Vector3f scratchG = new Vector3f(); // reuse por frame
+
+    private float getEffectiveGravity(BetterCharacterControl bcc) {
+        // 1) gravidade do BCC (se você a configurou por-entidade)
+        Vector3f g = tryGetBccGravity(bcc);
+        if (g != null && g.lengthSquared() > 0f) return Math.abs(g.y);
+
+        // 2) gravidade global do mundo
+        bullet.getPhysicsSpace().getGravity(scratchG);
+        if (scratchG.lengthSquared() > 0f) return Math.abs(scratchG.y);
+
+        // 3) fallback
+        return Math.abs(G);
+    }
+
+    private Vector3f tryGetBccGravity(BetterCharacterControl bcc) {
+        try {
+            Vector3f vet = new Vector3f();
+            bcc.getGravity(vet);
+            return vet;
+        } catch (Throwable t) {
+            return null;
+        }
     }
 
     // Ray para baixo a partir do “peito” do personagem
@@ -160,14 +135,13 @@ public class EntityPhysicsAdapter {
      * - Se ângulo <= max: usa o tangencial normalmente (sobe/ desce).
      * - Se ângulo >  max: bloqueia “subir” e adiciona slide downhill proporcional à gravidade.
      */
-    private static Vector3f applySlopeRules(Character character,
+    private static Vector3f applySlopeRules(CharacterEntity characterEntity,
                                             Vector3f desiredPlanar,   // já vem com y=0
                                             Vector3f groundNormal,    // pode ter y ≠ 0
                                             float gravityY,
-                                            float maxClimbDeg,
                                             float slideGain) {
-
-        float baseSpeed = character.getStats().getSpeed();
+        float maxClimbDeg = characterEntity.getType().blueprint().physics().slopeLimitDeg();
+        float baseSpeed = characterEntity.getStats().getSpeed();
 
         // Sem input: apenas escorrega se for íngreme
         if (desiredPlanar == null || desiredPlanar.lengthSquared() < EPS) {

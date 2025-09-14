@@ -5,14 +5,14 @@ import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 import me.brzeph.bootstrap.ServiceLocator;
-import me.brzeph.core.domain.entity.Character;
+import me.brzeph.core.domain.entity.CharacterEntity;
 import me.brzeph.core.domain.util.RandomUtils;
 import me.brzeph.infra.jme.adapter.physics.EntityPhysicsAdapter;
 
 import java.util.List;
 
 public class Utils {
-    public static boolean canSee(Character source, Character target,
+    public static boolean canSee(CharacterEntity source, CharacterEntity target,
                                  float maxDistance, float fovDeg) {
         boolean debug = false;
 
@@ -85,7 +85,7 @@ public class Utils {
             float maxSlopeDeg,
             int maxTries,
             float probeUp, float probeDown,
-            Character self // para filtrar self nos raycasts
+            CharacterEntity self // para filtrar self nos raycasts
     ) {
         EntityPhysicsAdapter adapter = ServiceLocator.get(EntityPhysicsAdapter.class);
 
@@ -145,7 +145,7 @@ public class Utils {
 
     /** Ray em linha reta no plano (ombro) para ver se há parede entre origem e destino. */
     public static boolean clearPathXZ(Vector3f fromPos, Vector3f toPos,
-                                      EntityPhysicsAdapter adapter, Character self) {
+                                      EntityPhysicsAdapter adapter, CharacterEntity self) {
         final float SHOULDER = 1.0f; // altura do “ombro” para evitar chão
         Vector3f a = new Vector3f(fromPos.x, fromPos.y + SHOULDER, fromPos.z);
         Vector3f b = new Vector3f(toPos.x,   toPos.y   + SHOULDER, toPos.z);

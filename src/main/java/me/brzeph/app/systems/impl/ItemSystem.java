@@ -4,19 +4,21 @@ import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
-import me.brzeph.app.systems.System;
+import me.brzeph.app.systems.SystemAbs;
 import me.brzeph.core.domain.chat.ChatChannel;
-import me.brzeph.core.domain.item.DroppedItem;
-import me.brzeph.core.factory.EntityFactory;
-import me.brzeph.infra.events.EventBus;
+import me.brzeph.core.domain.entity.item.DroppedItem;
+import me.brzeph.core.domain.entity.item.ItemInstance;
+import me.brzeph.core.factory.ItemFactory;
 import me.brzeph.infra.events.items.DropItemEvent;
-import me.brzeph.infra.jme.adapter.physics.EntityPhysicsAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ItemSystem extends System {
+import static me.brzeph.core.constants.ItemConstants.COIN_DEF;
+import static me.brzeph.core.constants.ItemConstants.PREFAB_RESOLVER;
+
+
+public class ItemSystem extends SystemAbs {
     private final List<DroppedItem> droppedItems = new ArrayList<>();
     private final ChatSystem chatSystem;
 
@@ -27,38 +29,24 @@ public class ItemSystem extends System {
 
     public ItemSystem() {
         chatSystem = (ChatSystem) getSystem(ChatSystem.class);
-        initialize();
     }
 
     public void initialize(){
-        getBus().post(new DropItemEvent(
-                new DroppedItem(
-                        new Vector3f(5,3,5),
-                        new Quaternion(0,0,0,1),
-                        "Item",
-                        null,
-                        0.2f,
-                        0,
-                        32
-                )
-        ));
-    }
-
-    public void subscribe(){
-        getBus().subscribe(DropItemEvent.class, this::DropItemEvent);
+        DroppedItem drop = ItemFactory.createDropFrom(
+                new ItemInstance(COIN_DEF, 25),
+                new Vector3f(10, 0, 5),
+                Quaternion.IDENTITY,
+                PREFAB_RESOLVER
+        );
+        getBus().post(new DropItemEvent(drop));
     }
 
     public void update(float tpf){
         for (DroppedItem item : droppedItems){
-            chatSystem.send(ChatChannel.GLOBAL, "", "" + item.getPosition());
-
-            // Atualiza o tempo para gerar um movimento cíclico (como uma função seno)
             currentTime += tpf * OSCILLATION_SPEED; // Ajuste a velocidade da oscilação
 
-            // Calcula o novo valor de Y com um movimento cíclico (usando a função seno)
             float yOffset = amplitude * FastMath.sin(currentTime);
-
-            Spatial spatial = getEntityPhysicsAdapter().getControl(item.getId()).getSpatial();
+            Node spatial = item.getCharacterNode();
 
             // Define a nova posição do item, mantendo a posição X e Z inalteradas, mas alterando a Y
             Vector3f currentPosition = spatial.getLocalTranslation();
@@ -68,12 +56,11 @@ public class ItemSystem extends System {
         }
     }
 
-    private void DropItemEvent(DropItemEvent dropItemEvent) {
+    public void DropItemEvent(DropItemEvent dropItemEvent) {
         DroppedItem item = dropItemEvent.item();
         chatSystem.send(ChatChannel.GLOBAL, "", "Spawning item: " + item);
         if(item == null) return;
-        droppedItems.add(dropItemEvent.item());
-        getEntityFactory().setupCharacter(item, getRoot());
-        getEntityPhysicsAdapter().getControl(item.getId()).setGravity(Vector3f.ZERO);
+        getEntityFactory().build(item, getRoot());
+        droppedItems.add(item);
     }
 }

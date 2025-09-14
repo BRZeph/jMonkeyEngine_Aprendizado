@@ -1,4 +1,4 @@
 package me.brzeph.infra.events.chat;
 
-public record ChatToggle(int pressedState) {
+public record ChatToggle(String playerId, boolean isPressed) {
 }

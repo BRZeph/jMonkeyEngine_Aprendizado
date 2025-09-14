@@ -1,23 +1,18 @@
 package me.brzeph.app.systems.impl;
 
-import com.jme3.app.Application;
-import com.jme3.app.SimpleApplication;
-import com.jme3.app.state.BaseAppState;
 import com.jme3.input.ChaseCamera;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.scene.Spatial;
-import me.brzeph.app.systems.System;
 import me.brzeph.app.systems.SystemAbs;
-import me.brzeph.app.systems.impl.PlayerSystem;
 import me.brzeph.bootstrap.ServiceLocator;
 import me.brzeph.infra.jme.adapter.physics.EntityPhysicsAdapter;
 
-import static me.brzeph.infra.constants.EnemiesConstants.EPS;
+import static me.brzeph.core.constants.EnemiesConstants.EPS;
 
-public class CameraSystem extends System {
+public class CameraSystem extends SystemAbs {
     private final Camera cam;
     private final Spatial playerNode;
     private ChaseCamera chase;
@@ -27,15 +22,15 @@ public class CameraSystem extends System {
     private float maxDistance  = 20f;
     private float camRadius    = 0.25f;  // “raio” visual da câmera (margem contra clipping)
 
+    // --- Controle de modo/locks ---
+    private enum CameraMode { GAMEPLAY, UI }
+    private CameraMode mode = CameraMode.GAMEPLAY;
+
     public CameraSystem() {
-        this.playerNode = ((PlayerSystem)getSystem(PlayerSystem.class)).getPlayerSpatial();
+        this.playerNode = ((PlayerSystem)getSystem(PlayerSystem.class)).getPlayer().getCharacterNode();
         this.cam = initCamera();
         ((PlayerSystem)getSystem(PlayerSystem.class)).setCam(cam);
-    }
-
-    @Override
-    public void subscribe() {
-
+        applyMode(CameraMode.GAMEPLAY);
     }
 
     private Camera initCamera() {
@@ -57,18 +52,41 @@ public class CameraSystem extends System {
         chase.setMinVerticalRotation(-FastMath.HALF_PI + 0.01f);
         chase.setMaxVerticalRotation( FastMath.HALF_PI - 0.01f);
 
+        setUiActive(false);
+
         return cam;
     }
 
     @Override
     public void update(float tpf) {
-        // zera roll (mantém câmera paralela ao chão)
+        // mantém roll zerado
         Quaternion q = new Quaternion();
         q.lookAt(getApp().getCamera().getDirection(), Vector3f.UNIT_Y);
         getApp().getCamera().setRotation(q);
 
-        // evita que a câmera entre no terreno/parede
         preventCameraClipping();
+    }
+
+    // --- API pública p/ GUI: "quero UI ativa?" ---
+    public void setUiActive(boolean inUi){
+        applyMode(inUi ? CameraMode.UI : CameraMode.GAMEPLAY);
+    }
+
+    // aplica o modo de forma idempotente ---
+    private void applyMode(CameraMode desired) {
+        if (this.mode == desired) return;
+        this.mode = desired;
+
+        boolean inUI = (desired == CameraMode.UI);
+        var im = getApp().getInputManager();
+
+        // Cursor/Mouse
+        im.setCursorVisible(inUI);
+
+        // Câmera
+        if (chase != null) chase.setEnabled(!inUI);
+        var fly = getApp().getFlyByCamera();
+        if (fly != null) fly.setEnabled(false);
     }
 
     public Camera getCam() {

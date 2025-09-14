@@ -6,6 +6,7 @@
       <name>java.lang.classfile.components.ClassPrinter.Node</name>
       <name>javax.swing.Box</name>
       <name>org.w3c.dom.Node</name>
+      <name>testes.ui.teste_02.ui.core.events.OnHoldEvent</name>
     </excluded-names>
   </component>
 </project>

@@ -1,0 +1,56 @@
+
+// 1) “Gem” empilhável até 1000, ignora estado => perfeito para inventário
+ItemDefinition GEM = ItemDefinition.builder(
+        ItemDefId.of("gem_ruby"), "Ruby Gem", ItemCategory.MATERIAL, ItemRarity.UNCOMMON)
+    .stack(new StackSpec(1000, StackRule.ANY_IF_SAME_DEF))
+    .weight(0.01f)
+    .tags("gem", "craft")
+
+    .build();
+
+// 2) Poção usável com 3 cargas e cooldown — empilha só se PRISTINE
+ItemDefinition POT_HEAL = ItemDefinition.builder(
+        ItemDefId.of("potion_heal_small"), "Small Healing Potion", ItemCategory.CONSUMABLE, ItemRarity.COMMON)
+    .stack(new StackSpec(20, StackRule.ONLY_IF_PRISTINE))
+    .use(new UseSpec("heal_small", UseTargetKind.SELF, 1500, 3))
+    .weight(0.2f)
+    .build();
+
+// 3) Espada equipável com durabilidade — não empilha
+ItemDefinition SWORD = ItemDefinition.builder(
+        ItemDefId.of("sword_iron"), "Iron Sword", ItemCategory.WEAPON, ItemRarity.COMMON)
+    .durability(new DurabilitySpec(100, true))
+    .equip(new EquipSpec(Set.of(EquipSlot.HAND_MAIN), false, Map.of("ATK", 12f)))
+    .bind(BindKind.BIND_ON_EQUIP)
+    .weight(3.5f)
+    .build();
+
+// criar instâncias
+ItemInstance stack1 = new ItemInstance(GEM, 600);
+ItemInstance stack2 = new ItemInstance(GEM, 800);
+
+// checar se podem empilhar (fingerprint) e empilhar até 1000
+if (stack1.stackFingerprint().equals(stack2.stackFingerprint())) {
+    int sobra = stack1.addToStack(stack2.quantity());
+    if (sobra == 0) {
+        // todo stack2 foi consumido pelo stack1
+    } else {
+        // sobrou “sobra”, você pode manter stack2 com quantidade = sobra
+        // (ou dividir diferente)
+    }
+}
+
+// usar poção (consome 1 carga e aplica cooldown)
+ItemInstance pot = new ItemInstance(POT_HEAL, 5); // 5 frascos
+long now = System.currentTimeMillis();
+if (!pot.isOnCooldown(now) && pot.consumeCharge()) {
+    pot.setCooldown(now);
+    // quando charges chegar a 0, você pode decidir: consumir 1 unidade do stack
+    if (pot.charges().orElse(0) == 0) {
+        // remove 1 da quantidade e reseta charges da nova “unidade”
+        if (pot.quantity() > 1) {
+            ItemInstance novoFrasco = pot.split(1);
+            // usa o novoFrasco; ou simplesmente reinit charges ao “usar” a próxima unidade
+        }
+    }
+}

@@ -2,7 +2,7 @@ package me.brzeph.bootstrap;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.system.AppSettings;
-import me.brzeph.infra.jme.appstate.LoadingState;
+import me.brzeph.infra.appstate.LoadingState;
 
 public class MyGame extends SimpleApplication {
 

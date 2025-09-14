@@ -1,24 +1,14 @@
 package me.brzeph.infra.repository;
 
 import me.brzeph.core.domain.entity.GameEntity;
-import me.brzeph.core.domain.entity.Player;
+import me.brzeph.core.domain.entity.player.Player;
 import me.brzeph.core.domain.entity.enemies.Monster;
-import me.brzeph.core.domain.item.DroppedItem;
+import me.brzeph.core.domain.entity.item.DroppedItem;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 public class GameEntityRepository {
-    /*
-    Padrão de registro:
-    [classe]_[contador].
-    exemplo:
-        Player_001
-        Player_002
-        Monster_054
-        NPC_38
-     */
 
     private static final Map<String, GameEntity> entities = new HashMap<>();
     private static long lastUser = 0;
