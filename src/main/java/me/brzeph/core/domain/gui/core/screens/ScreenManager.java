@@ -20,15 +20,8 @@ public final class ScreenManager {
     }
 
     // ---------- registro ----------
-    public Screen open(ScreenPlugin plugin, ScreenParams params){
-        ScreenContext ctx = new ScreenContext();
-        Screen s = plugin.build(ctx, params);
-        register(s);
-        return s;
-    }
-
     public void register(Screen s){
-        s.onFlagsChanged(this::applyFlyCam); // reavaliar quando visibilidade/ativo mudarem
+        s.onFlagsChanged(this::applyFlyCam);
         byId.put(s.id(), s);
         order.add(s);
         sort();
@@ -36,9 +29,13 @@ public final class ScreenManager {
     }
 
     public void close(String id){
-        Screen s = byId.remove(id);
+        Screen s = byId.get(id);
         if (s != null) order.remove(s);
         applyFlyCam();
+    }
+
+    public Screen getById(String id){
+        return byId.get(id);
     }
 
     public Optional<Screen> find(String id){ return Optional.ofNullable(byId.get(id)); }

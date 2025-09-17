@@ -13,6 +13,7 @@ import com.jme3.scene.shape.Box;
 import com.jme3.terrain.geomipmap.TerrainQuad;
 import com.jme3.terrain.heightmap.AbstractHeightMap;
 import com.jme3.terrain.heightmap.HillHeightMap;
+import me.brzeph.core.domain.entity.GameEntity;
 
 public final class WorldFactory {
 

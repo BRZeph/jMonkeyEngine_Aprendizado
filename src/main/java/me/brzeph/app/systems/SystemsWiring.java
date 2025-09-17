@@ -1,7 +1,10 @@
 package me.brzeph.app.systems;
 
 import me.brzeph.app.systems.impl.*;
-import me.brzeph.core.domain.gui.core.screens.UIScreenClickEvent;
+import me.brzeph.app.systems.impl.collisionHandler.ItemProximitySystem;
+import me.brzeph.app.systems.impl.collisionSystem.events.DropConsumedEvent;
+import me.brzeph.app.systems.impl.collisionSystem.events.ItemProximityEnter;
+import me.brzeph.app.systems.impl.collisionSystem.events.ItemProximityExit;
 import me.brzeph.infra.events.chat.ChatScroll;
 import me.brzeph.infra.events.chat.ChatToggle;
 import me.brzeph.infra.events.entities.enemies.MonsterAggroEvent;
@@ -15,12 +18,12 @@ import me.brzeph.infra.events.items.DropItemEvent;
 public final class SystemsWiring {
 
     public static void wireSystems() {
-         ItemSystem       itemSystem      = (ItemSystem      ) SystemAbs.getSystem(ItemSystem      .class);
-//         DefaultGUISystem guiSystem       = (DefaultGUISystem) SystemAbs.getSystem(DefaultGUISystem.class); Wiring desta classe é interno.
-         MonsterSystem    monsterSystem   = (MonsterSystem   ) SystemAbs.getSystem(MonsterSystem   .class);
-         ChatSystem       chatSystem      = (ChatSystem      ) SystemAbs.getSystem(ChatSystem      .class);
-         CameraSystem     cameraSystem    = (CameraSystem    ) SystemAbs.getSystem(CameraSystem    .class);
-         PlayerSystem     playerSystem    = (PlayerSystem    ) SystemAbs.getSystem(PlayerSystem    .class);
+        ItemSystem          itemSystem          = (ItemSystem         ) SystemAbs.getSystem(ItemSystem         .class);
+        MonsterSystem       monsterSystem       = (MonsterSystem      ) SystemAbs.getSystem(MonsterSystem      .class);
+        ChatSystem          chatSystem          = (ChatSystem         ) SystemAbs.getSystem(ChatSystem         .class);
+        CameraSystem        cameraSystem        = (CameraSystem       ) SystemAbs.getSystem(CameraSystem       .class);
+        PlayerSystem        playerSystem        = (PlayerSystem       ) SystemAbs.getSystem(PlayerSystem       .class);
+        ItemProximitySystem itemProximitySystem = (ItemProximitySystem) SystemAbs.getSystem(ItemProximitySystem.class);
 
         itemSystem.getBus().subscribe(DropItemEvent.class, itemSystem::DropItemEvent);
 
@@ -34,5 +37,9 @@ public final class SystemsWiring {
         playerSystem.getBus().subscribe(PlayerWalkEvent.class, playerSystem::onWalkAction);
         playerSystem.getBus().subscribe(PlayerJumpEvent.class, playerSystem::onJumpAction);
         playerSystem.getBus().subscribe(PlayerRunEvent.class , playerSystem::onTriggerRunAction);
+
+        itemProximitySystem.getBus().subscribe(ItemProximityEnter.class, itemProximitySystem::itemProximityEnterEventHandler);
+        itemProximitySystem.getBus().subscribe(ItemProximityExit.class, itemProximitySystem::itemProximityExitEventHandler);
+        itemProximitySystem.getBus().subscribe(DropConsumedEvent.class, itemProximitySystem::itemFullyConsumedHandler);
     }
 }

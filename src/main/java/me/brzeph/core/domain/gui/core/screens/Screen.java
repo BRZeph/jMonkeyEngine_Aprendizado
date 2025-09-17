@@ -8,7 +8,7 @@ import me.brzeph.core.domain.gui.core.widgets.Widget;
 public final class Screen {
     private final String id;
     private final UIRoot ui;
-    private ScreenLayer layer = ScreenLayer.PANEL;
+    private ScreenLayer layer;
     private boolean visible = true;
     private boolean active = true;
     private boolean freezeInputBehind = false;
@@ -47,6 +47,10 @@ public final class Screen {
     // usado pelo ScreenManager ao registrar
     public Screen onFlagsChanged(Runnable r){ this.flagsChangedCb = r; return this; }
     private void notifyFlagsChanged(){ if (flagsChangedCb != null) flagsChangedCb.run(); }
+
+    public Rect getBounds(){
+        return ui.root().bounds();
+    }
 
     public void setBounds(Rect r){ ui.root().setBounds(r); }
     public void draw(){ if (visible) ui.draw(); }

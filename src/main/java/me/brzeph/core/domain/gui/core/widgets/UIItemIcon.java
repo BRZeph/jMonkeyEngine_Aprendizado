@@ -18,7 +18,6 @@ public final class UIItemIcon extends Widget<UIItemIcon> {
 
     private void ensureIcon(){
         String path = (item != null && item.definition() != null) ? item.definition().getIconPath() : null;
-        System.out.println("Ensuring iconPath: " + path + " | item=" + item);
         if (icon == null && path != null) {
             icon = assets().image(path).orElse(null);
         }
@@ -33,6 +32,7 @@ public final class UIItemIcon extends Widget<UIItemIcon> {
     @Override
     public void draw(){
         if (!isVisible()) return;
+        if (item == null) return;
         ensureIcon();
         Rect bAll = bounds();
         Rect b = inset(bAll, padding); // substituir bAll.inset(padding)

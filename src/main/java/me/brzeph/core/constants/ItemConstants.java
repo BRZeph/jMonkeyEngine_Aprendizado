@@ -25,7 +25,7 @@ public class ItemConstants {
     public static final ItemDefinition MOCK_ITEM_DEF = ItemDefinition.builder(
                     ItemDefId.of(COIN_ITEM_ID), "Gold Coin",
                     ItemCategory.ARMOR, ItemRarity.COMMON, COIN_ITEM_ICON_PATH)
-            .stack(new StackSpec(9999, StackRule.ANY_IF_SAME_DEF))
+            .stack(new StackSpec(7, StackRule.ANY_IF_SAME_DEF))
             .dropHint(new DropHint(COIN_ITEM_PREFAB_KEY, 1.0f, 120f))
             .build();
 

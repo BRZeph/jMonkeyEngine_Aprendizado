@@ -14,7 +14,7 @@ public class PlayerAudioAdapter {
     }
 
     /**
-     * Toca um som simples para o player.
+     * Toca um som simples para o entity.
      */
     public void playSound(String soundFile) {
         AudioNode audio = new AudioNode(assetManager, "assets/sounds/entities/" + soundFile + ".wav", AudioData.DataType.Buffer);
@@ -24,7 +24,7 @@ public class PlayerAudioAdapter {
     }
 
     /**
-     * Toca som posicional na posição do player.
+     * Toca som posicional na posição do entity.
      */
     public void playSoundAt(Player player, String soundFile) {
         AudioNode audio = new AudioNode(assetManager, "assets/sounds/entities/" + soundFile + ".wav", AudioData.DataType.Buffer);

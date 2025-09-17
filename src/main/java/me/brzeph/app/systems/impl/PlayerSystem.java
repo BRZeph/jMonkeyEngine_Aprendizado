@@ -6,12 +6,9 @@ import com.jme3.renderer.Camera;
 import me.brzeph.app.systems.SystemAbs;
 import me.brzeph.core.domain.entity.CharacterStats;
 import me.brzeph.core.domain.entity.EntityType;
-import me.brzeph.core.domain.entity.item.InventoryItem;
 import me.brzeph.core.domain.entity.item.ItemInstance;
 import me.brzeph.core.domain.entity.player.Player;
 import me.brzeph.app.service.PlayerService;
-import me.brzeph.core.domain.gui.impl.inventory.InventoryServiceImpl;
-import me.brzeph.core.factory.ItemFactory;
 import me.brzeph.infra.events.entities.player.PlayerJumpEvent;
 import me.brzeph.infra.events.entities.player.PlayerRunEvent;
 import me.brzeph.infra.events.entities.player.PlayerWalkEvent;
@@ -27,7 +24,7 @@ import static me.brzeph.core.constants.PlayerConstants.PLAYER_RUN_SPEED;
 public class PlayerSystem extends SystemAbs {
     private final PlayerAudioAdapter playerAudio;
     private final GUISystem defaultGUISystem;
-    private final InventoryServiceImpl inventoryService;
+    private final InventorySystem inventorySystem;
     private Player player;
     private Vector3f walkDir = new Vector3f();
     private boolean movingForward = false;   // PROBABLY SHOULD REFACTOR THIS INSIDE THE PLAYER.CLASS
@@ -41,7 +38,10 @@ public class PlayerSystem extends SystemAbs {
     public PlayerSystem() {
         defaultGUISystem = (GUISystem) getSystem(GUISystem.class);
         playerAudio = new PlayerAudioAdapter(getAssetManager());
-        this.inventoryService = new InventoryServiceImpl(getBus());
+        inventorySystem = (InventorySystem) getSystem(InventorySystem.class);
+        if (inventorySystem == null){
+            throw new RuntimeException("No inventory system found");
+        }
         spawnPlayer();
     }
 
@@ -116,10 +116,10 @@ public class PlayerSystem extends SystemAbs {
     }
 
     public void giveStarterItems(Player player) {
-        inventoryService.addItem(player, new ItemInstance(COIN_DEF, 25));
-        for (int i = 0; i < 10; i++){
-            inventoryService.addItem(player, new ItemInstance(MOCK_ITEM_DEF, 2));
-        }
+        inventorySystem.addItem(player, new ItemInstance(COIN_DEF, 20), false);
+//        for (int i = 0; i < 35; i++){
+//            inventorySystem.addItem(player, new ItemInstance(MOCK_ITEM_DEF, 1), false);
+//        }
     }
 
     public Player getPlayer() {
@@ -132,5 +132,9 @@ public class PlayerSystem extends SystemAbs {
 
     public void inventoryJustToggled(){
         this.chatOpen = !this.chatOpen;
+    }
+
+    public InventorySystem getInventorySystem() {
+        return inventorySystem;
     }
 }

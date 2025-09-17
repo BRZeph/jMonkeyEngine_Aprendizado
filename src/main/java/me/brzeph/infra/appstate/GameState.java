@@ -11,14 +11,16 @@ import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
-import com.jme3.renderer.ViewPort;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.SceneGraphVisitorAdapter;
 import me.brzeph.app.systems.SystemsWiring;
 import me.brzeph.app.systems.SystemAbs;
 import me.brzeph.app.systems.impl.*;
+import me.brzeph.app.systems.impl.collisionHandler.ItemProximitySystem;
+import me.brzeph.app.systems.impl.collisionSystem.CollisionSystem;
 import me.brzeph.bootstrap.ServiceLocator;
+import me.brzeph.app.systems.impl.InventorySystem;
 import me.brzeph.core.factory.EntityFactory;
 import me.brzeph.infra.events.EventBus;
 import me.brzeph.infra.jme.adapter.JmeAudio;
@@ -41,6 +43,8 @@ public class GameState extends BaseAppState {
     private ItemSystem itemSystem;
     private InputSystem inputSystem;
     private CollisionSystem collisionSystem;
+    private ItemProximitySystem itemProximitySystem;
+    private InventorySystem inventorySystem;
 
     // ---- Runtime refs ----
     private BulletAppState bullet;
@@ -60,6 +64,8 @@ public class GameState extends BaseAppState {
 
     @Override
     public void update(float tpf) {
+        collisionSystem.pump();
+        itemProximitySystem.update(tpf);
         chatSystem.update(tpf);
         playerSystem.update(tpf);
         cameraSystem.update(tpf);
@@ -97,6 +103,7 @@ public class GameState extends BaseAppState {
         ServiceLocator.put(PhysicsSpace.class, bullet.getPhysicsSpace());
         ServiceLocator.put(EntityFactory.class, new EntityFactory(app.getAssetManager(), bullet.getPhysicsSpace()));
 
+        inventorySystem = new InventorySystem();
         collisionSystem = new CollisionSystem();
         defaultGUISystem = new GUISystem();
         playerSystem = new PlayerSystem();
@@ -105,11 +112,11 @@ public class GameState extends BaseAppState {
         monsterSystem = new MonsterSystem();
         itemSystem = new ItemSystem();
         inputSystem = new InputSystem();
+        itemProximitySystem = new ItemProximitySystem();
 
         SystemsWiring.wireSystems();
 
         itemSystem.initialize(); // Chamar apenas depois do wireSystems.
-        collisionSystem.initialize();
         defaultGUISystem.initialize();
         playerSystem.initialize();
 

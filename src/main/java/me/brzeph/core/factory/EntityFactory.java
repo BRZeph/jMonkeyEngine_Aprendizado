@@ -20,16 +20,10 @@ import me.brzeph.core.domain.entity.specs.VisualSpec;
 
 import java.util.Objects;
 
+import static me.brzeph.app.systems.impl.collisionSystem.CollisionSystem.attach;
 import static me.brzeph.core.constants.CollisionConstants.*;
 import static me.brzeph.core.constants.PhysicsConstants.*;
 
-/** Assumindo que você já tem:
- *  - EntityType com .blueprint() -> EntityBlueprint
- *  - EntityBlueprint.visual() -> VisualSpec
- *  - EntityBlueprint.physics() -> PhysicsSpec
- *  - enums: VisualKind {PRIMITIVE, MODEL}, BodyKind {RIGID, STATIC, CHARACTER, GHOST}, ShapeType {BOX, SPHERE, CAPSULE, HULL, MESH}
- *  - Sua hierarquia GameEntity/Character/Monster/Player/DroppedItem...
- */
 public final class EntityFactory {
     private final AssetManager am;
     private final PhysicsSpace physics;
@@ -65,9 +59,10 @@ public final class EntityFactory {
         root.attachChild(actor);
         if (ctrl != null) physics.add(actor); // adiciona todos os PhysicsControls do actor
 
-        // 5) (Opcional) guardar referência de volta na entidade
+        // 5) guardar referência de volta na entidade
         e.setCharacterNode(actor);
 
+        attach(e); // Register on CollisionSystem
     }
 
     /* ===================== VISUAL ===================== */
@@ -219,7 +214,6 @@ public final class EntityFactory {
         }
         g.setMaterial(m);
     }
-
 
     private void applyMaterialRecursive(Spatial s, Material m) {
         if (s instanceof Geometry g) {

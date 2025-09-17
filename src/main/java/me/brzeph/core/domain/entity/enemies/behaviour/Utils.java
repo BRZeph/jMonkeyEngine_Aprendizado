@@ -1,11 +1,14 @@
 package me.brzeph.core.domain.entity.enemies.behaviour;
 
+import com.jme3.bullet.collision.PhysicsCollisionObject;
 import com.jme3.bullet.collision.PhysicsRayTestResult;
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
+import me.brzeph.app.systems.impl.collisionSystem.helpers.CollLayers;
 import me.brzeph.bootstrap.ServiceLocator;
 import me.brzeph.core.domain.entity.CharacterEntity;
+import me.brzeph.core.domain.entity.GameEntity;
 import me.brzeph.core.domain.util.RandomUtils;
 import me.brzeph.infra.jme.adapter.physics.EntityPhysicsAdapter;
 
@@ -14,11 +17,9 @@ import java.util.List;
 public class Utils {
     public static boolean canSee(CharacterEntity source, CharacterEntity target,
                                  float maxDistance, float fovDeg) {
-        boolean debug = false;
-
         if (source == null || target == null || !source.isAlive() || !target.isAlive()) return false;
 
-        // “olhos” (pode só planarizar se preferir)
+        // Olhos
         Vector3f sourcePos = source.getPosition().add(0, source.getHeight() * 0.8f, 0);
         Vector3f targetPos = target.getPosition().add(0, target.getHeight() * 0.8f, 0);
 
@@ -27,56 +28,58 @@ public class Utils {
         float distance = toTarget.length();
         if (distance > maxDistance) return false;
 
-        // FOV no plano (ignora diferença de Y para visão horizontal mais estável)
+        // FOV (plano)
         Vector3f forward = source.getRotation().mult(Vector3f.UNIT_Z);
         forward.y = 0; forward.normalizeLocal();
         Vector3f toTargetPlanar = new Vector3f(toTarget.x, 0, toTarget.z).normalizeLocal();
         float angle = forward.angleBetween(toTargetPlanar);
         if (angle > FastMath.DEG_TO_RAD * (fovDeg * 0.5f)) return false;
 
-        // Raycast físico
-        EntityPhysicsAdapter adapter = ServiceLocator.get(EntityPhysicsAdapter.class);
-        List<PhysicsRayTestResult> results = adapter.rayTest(sourcePos, targetPos);
+        // Origem levemente à frente pra evitar auto-acerto
+        Vector3f from = sourcePos.add(forward.mult(0.05f));
 
-        // Nada bateu → caminho livre
+        // Raycast
+        EntityPhysicsAdapter adapter = ServiceLocator.get(EntityPhysicsAdapter.class);
+        List<PhysicsRayTestResult> results = adapter.rayTest(from, targetPos);
         if (results == null || results.isEmpty()) return true;
 
-        // Ordena do mais perto para o mais longe (por garantia)
         results.sort(java.util.Comparator.comparingDouble(PhysicsRayTestResult::getHitFraction));
 
-        if(debug) System.out.println(
-                "[SEE] src=" + source.getName() + " → tgt=" + target.getName()
-                + " dist=" + distance
-                + " angleDeg=" + Math.toDegrees(angle)
-                + " hits=" + results.size()
-        );
-
         for (PhysicsRayTestResult r : results) {
-            Object uo = r.getCollisionObject().getUserObject();
+            PhysicsCollisionObject pco = r.getCollisionObject();
+            Object uo = pco.getUserObject();
 
-            // Ignora a si mesmo
+            // 1) ignore self (corpo e ghosts do próprio source)
             if (uo == source) continue;
 
-            // Acertou o alvo → visão livre
-            if (uo == target) return true;
+            // 2) ignore GHOSTS sempre
+            if (pco instanceof com.jme3.bullet.objects.PhysicsGhostObject) continue;
 
-            if (uo instanceof Spatial) {
-                Spatial s = (Spatial) uo;
-                String id = s.getUserData("characterId"); // userData é para identificar o Spatial.
-                if (id != null && id.equals(target.getId())) return true;
-                // espaço para tratar terreno/parede via outra userData (ex.: "isObstacle")
-                return false; // outro spatial bloqueia
+            // 3) alvo?
+            if (uo == target) return true;
+            if (uo instanceof GameEntity ge && ge.getId().equals(target.getId())) return true;
+
+            // 4) grupos que NÃO bloqueiam visão (ajuste a seu gosto)
+            int g = pco.getCollisionGroup();
+            if ((g & (CollLayers.ITEM | CollLayers.SPELL | CollLayers.SENSOR)) != 0) {
+                // itens, hitboxes, sensores não bloqueiam LoS
+                continue;
             }
 
-            // Qualquer outra coisa com userObject → bloqueou
-            if (uo != null) return false;
+            // 5) obstáculos que BLOQUEIAM
+            // mundo/estático
+            if ((g & CollLayers.WORLD) != 0) return false;
+            if (pco instanceof com.jme3.bullet.objects.PhysicsRigidBody rb && rb.getMass() == 0f) return false;
 
-            // Se uo == null, costuma ser terreno/props sem marcação → trate como bloqueio.
-            return false;
+            // 6) (opcional) outros personagens bloqueiam
+            if ((g & (CollLayers.PLAYER | CollLayers.MONSTER | CollLayers.NPC)) != 0) return false;
+
+            // Se chegou aqui e não decidiu, apenas continue procurando o alvo
         }
-        throw new RuntimeException("Could not find result for rayTracing:\n[SEE] src=" + source.getName() + " tgt=" + target.getName());
-    }
 
+        // Não achou o alvo antes de um bloqueio
+        return false;
+    }
 
     /** Tenta achar um ponto válido ao redor. Retorna null se não conseguir em maxTries. */
     public static Vector3f pickRandomWalkableAround(

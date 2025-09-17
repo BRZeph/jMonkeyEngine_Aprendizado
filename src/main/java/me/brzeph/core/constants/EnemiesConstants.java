@@ -83,22 +83,22 @@ SelectorNode (root)
                         new ConditionNode(monster -> monster.getAggro() == null), // aggro vazio
                         new SelectorNode(List.of(
 
-                                // 1a. Consegue ver o player
+                                // 1a. Consegue ver o entity
                                 new SequenceNode(List.of(
                                         new ConditionNode(monster -> {
                                             boolean canSee = monster.canSeeTarget(playerList) != null;
-//                                            boolean canSee = false; // Desabilitado aggro no player para testar movimentação de monstros.
+//                                            boolean canSee = false; // Desabilitado aggro no entity para testar movimentação de monstros.
                                             if(debug) System.out.println("[Condition] Monster " + monster.getName() + " canSeeTarget? " + canSee);
                                             return canSee;
                                         }),
                                         new ActionNode(monster -> {
                                             Player player = (Player) monster.canSeeTarget(playerList);
-                                            if(debug) System.out.println("[Action] Monster " + monster.getName() + " aggro on player " + player.getName());
+                                            if(debug) System.out.println("[Action] Monster " + monster.getName() + " aggro on entity " + player.getName());
                                             bus.post(new MonsterAggroEvent(monster, player));
                                         })
                                 )),
 
-                                // 1b. Não consegue ver o player → walkingTo vazio? gera alvo aleatório
+                                // 1b. Não consegue ver o entity → walkingTo vazio? gera alvo aleatório
                                 new SequenceNode(List.of(
                                         new ConditionNode(monster -> {
                                             boolean empty = MonsterService.isZero(monster.getWalkingTo());

@@ -24,7 +24,7 @@ public class MonsterAudioAdapter {
     }
 
     /**
-     * Toca som posicional na posição do player.
+     * Toca som posicional na posição do entity.
      */
     public void playSoundAt(Monster monster, String soundFile) {
         AudioNode audio = new AudioNode(assetManager, "assets/sounds/entities/monsters/" + soundFile + ".wav", AudioData.DataType.Buffer);

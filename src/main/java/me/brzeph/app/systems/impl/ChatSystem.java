@@ -31,7 +31,7 @@ public class ChatSystem extends SystemAbs {
         transport =  new LocalLoopbackChatTransport(
                 () -> playerSystem.getPlayer().getName(),
                 () -> playerSystem.getPlayer().getPosition(),
-                () -> List.of(playerSystem.getPlayer()), // hoje 1 player, amanhã N, trocar para lista de players global
+                () -> List.of(playerSystem.getPlayer()), // hoje 1 entity, amanhã N, trocar para lista de players global
                 100f // raio LOCAL, metros
         );
         transport.setOnBroadcast(this::onBroadcast);

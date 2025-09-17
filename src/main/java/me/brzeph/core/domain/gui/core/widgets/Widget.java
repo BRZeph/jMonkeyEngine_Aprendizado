@@ -43,7 +43,9 @@ public abstract class Widget<T extends Widget<T>> {
 
     public void draw(){
         if (!isVisible()) return;
-        for (var c : children) c.draw();
+        for (var c : children){
+            c.draw();
+        }
     }
 
     // Hit-test em profundidade

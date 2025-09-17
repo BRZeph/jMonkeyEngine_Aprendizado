@@ -6,10 +6,12 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import me.brzeph.app.systems.SystemAbs;
 import me.brzeph.core.domain.chat.ChatChannel;
+import me.brzeph.core.domain.entity.GameEntity;
 import me.brzeph.core.domain.entity.item.DroppedItem;
 import me.brzeph.core.domain.entity.item.ItemInstance;
 import me.brzeph.core.factory.ItemFactory;
 import me.brzeph.infra.events.items.DropItemEvent;
+import me.brzeph.infra.repository.GameEntityRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +21,7 @@ import static me.brzeph.core.constants.ItemConstants.PREFAB_RESOLVER;
 
 
 public class ItemSystem extends SystemAbs {
-    private final List<DroppedItem> droppedItems = new ArrayList<>();
+    private final List<String> droppedItems = new ArrayList<>();
     private final ChatSystem chatSystem;
 
     private static final float OSCILLATION_SPEED = 2f; // Velocidade do movimento (quanto maior, mais rápido o item sobe e desce)
@@ -42,7 +44,8 @@ public class ItemSystem extends SystemAbs {
     }
 
     public void update(float tpf){
-        for (DroppedItem item : droppedItems){
+        for (String s : droppedItems){
+            DroppedItem item = (DroppedItem) GameEntityRepository.findById(s);
             currentTime += tpf * OSCILLATION_SPEED; // Ajuste a velocidade da oscilação
 
             float yOffset = amplitude * FastMath.sin(currentTime);
@@ -61,6 +64,14 @@ public class ItemSystem extends SystemAbs {
         chatSystem.send(ChatChannel.GLOBAL, "", "Spawning item: " + item);
         if(item == null) return;
         getEntityFactory().build(item, getRoot());
-        droppedItems.add(item);
+        droppedItems.add(item.getId());
+    }
+
+    public void deSpawn(DroppedItem e) {
+        if (!droppedItems.contains(e.getId())) {
+            throw new IllegalArgumentException("Attempted to despawn item that wasn't dropped");
+        }
+        droppedItems.remove(e.getId());
+        GameEntityRepository.remove(e.getId());
     }
 }

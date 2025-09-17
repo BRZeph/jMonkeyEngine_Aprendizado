@@ -75,7 +75,7 @@ public final class ScreenManagerInput {
                         && targetScreen != null && targetWidget != null){
                     dragging = true;
                     if (targetWidget instanceof UIInventorySlot) {
-                        bus.post(new UIDragStartEvent(targetScreen.id(), targetWidget.id(), startX, startY, pressedButton,
+                        bus.post(new UIDragStartEvent(targetScreen.id(), (UIInventorySlot) targetWidget, startX, startY, pressedButton,
                                 ((UIInventorySlot) targetWidget).getItem())
                         );
                     }

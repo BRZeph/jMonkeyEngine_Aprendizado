@@ -18,7 +18,7 @@ public class CameraSystem extends SystemAbs {
     private ChaseCamera chase;
     private Vector3f lookAtOffset = new Vector3f(0, 1.6f, 0); // já usa algo assim
     private float baseDistance = 10f;
-    private float minDistance  = 1.5f;   // quão perto pode chegar do player
+    private float minDistance  = 1.5f;   // quão perto pode chegar do entity
     private float maxDistance  = 20f;
     private float camRadius    = 0.25f;  // “raio” visual da câmera (margem contra clipping)
 
@@ -112,11 +112,11 @@ public class CameraSystem extends SystemAbs {
 
         float allowed = desired;
         if (hits != null && !hits.isEmpty()) {
-            // pega o hit mais próximo que NÃO seja o próprio player
+            // pega o hit mais próximo que NÃO seja o próprio entity
             hits.sort(java.util.Comparator.comparingDouble(com.jme3.bullet.collision.PhysicsRayTestResult::getHitFraction));
             for (var r : hits) {
                 Object uo = r.getCollisionObject().getUserObject();
-                if (isSelf(uo)) continue;           // ignora corpo do player
+                if (isSelf(uo)) continue;           // ignora corpo do entity
                 float f = (float) r.getHitFraction();
                 float hitDist = desired * f;
                 allowed = Math.min(allowed, Math.max(minDistance, hitDist - camRadius)); // encurta com margem

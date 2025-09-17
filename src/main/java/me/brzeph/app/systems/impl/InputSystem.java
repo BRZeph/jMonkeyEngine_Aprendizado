@@ -30,7 +30,7 @@ public class InputSystem extends SystemAbs implements ActionListener {
     public void onAction(String name, boolean isPressed, float tpf) {
         /*
         Quando for fazer multiplayer, os eventos talvez possam ter o nome:
-        [event_name]_[player_id] ou algo do tipo, desta forma posso identificar o player aqui.
+        [event_name]_[player_id] ou algo do tipo, desta forma posso identificar o entity aqui.
          */
         /*
             Fazer um bando de if usando os sistemas e foda-se.

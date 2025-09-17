@@ -20,7 +20,7 @@ public class DroppedItem extends GameEntity {
                        ItemInstance item,
                        float pickupRadius,
                        Instant despawnAt,
-                       String droppedByCharacterId) {
+                       String droppedByCharacterId) { // TODO: Start using this parameter.
         super(type, position, rotation);
         this.item = item;
         this.pickupRadius = pickupRadius;
@@ -28,9 +28,16 @@ public class DroppedItem extends GameEntity {
         this.droppedByCharacterId = droppedByCharacterId;
     }
 
+    public void setQuantity(int amount) {
+        item.setQuantity(amount);
+    }
+
+    public void addQuantity(int amount) {
+        item.setQuantity(item.quantity() + amount);
+    }
+
     public ItemInstance getItemInstance() { return item; }
-    public float getPickupRadius() { return pickupRadius; }
-    public Instant getDespawnAt() { return despawnAt; }
+    public Instant getDeSpawnAt() { return despawnAt; }
     public String getDroppedByCharacterId() { return droppedByCharacterId; }
 }
 

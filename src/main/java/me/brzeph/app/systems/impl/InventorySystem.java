@@ -1,20 +1,26 @@
-package me.brzeph.core.domain.gui.impl.inventory;
+package me.brzeph.app.systems.impl;
 
+import me.brzeph.app.systems.SystemAbs;
+import me.brzeph.app.systems.impl.collisionSystem.events.DropConsumedEvent;
 import me.brzeph.core.domain.entity.item.DroppedItem;
 import me.brzeph.core.domain.entity.item.ItemCategory;
 import me.brzeph.core.domain.entity.item.ItemDefinition;
 import me.brzeph.core.domain.entity.item.ItemInstance;
 import me.brzeph.core.domain.entity.player.Player;
+import me.brzeph.core.domain.gui.impl.inventory.InventorySystemInt;
+import me.brzeph.core.domain.gui.impl.inventory.PlayerInventory;
 import me.brzeph.infra.events.EventBus;
 
-public final class InventoryServiceImpl implements InventoryService {
+public final class InventorySystem extends SystemAbs implements InventorySystemInt {
 
-    private final EventBus bus; // seu event bus
+    private final EventBus bus;
 
-    public InventoryServiceImpl(EventBus bus){ this.bus = bus; }
+    public InventorySystem() {
+        bus = getBus();
+    }
 
     @Override
-    public AddResult addItem(Player player, ItemInstance item) {
+    public AddResult addItem(Player player, ItemInstance item, boolean autoEquip) {
         if (item == null) return new AddResult(0, null);
 
         PlayerInventory inv = player.getInventory();
@@ -38,7 +44,6 @@ public final class InventoryServiceImpl implements InventoryService {
         // 3) Poções: tenta slots POTION1..3 (empilhar se mesma poção e stackável)
         if (def.category() == ItemCategory.POTION) {
             int added = tryAddToPotionSlots(inv, item);
-            if (added == qty) { postEquipChanged(player); return new AddResult(added, null); }
             setQty(item, qty - added); // sobrou
             // continua tentando no comum
         }
@@ -53,30 +58,21 @@ public final class InventoryServiceImpl implements InventoryService {
         int totalAdded = Math.min(qty, addedCommon);
         ItemInstance remainder = (totalAdded == qty) ? null : copyWithQuantity(item, qty - totalAdded);
 
-        if (totalAdded > 0) postCommonChanged(player);
         return new AddResult(totalAdded, remainder);
     }
 
     @Override
     public AddResult pickup(Player player, DroppedItem drop) {
-        AddResult res = addItem(player, drop.getItemInstance());
+        AddResult res = addItem(player, drop.getItemInstance(), false);
+        if (res.added() == 0) return res;
         if (res.remainder() == null) {
-            // remove o drop do mundo
+            // Remove o drop do mundo
             bus.post(new DropConsumedEvent(drop.getId()));
         } else {
-            // opcional: atualizar o drop no mundo com qty restante
+            // Atualizar o drop no mundo com qty restante
             setQty(drop.getItemInstance(), qty(res.remainder()));
-            bus.post(new DropPartiallyConsumedEvent(drop.getId(), qty(drop.getItemInstance())));
         }
         return res;
-    }
-
-    public record DropConsumedEvent(String dropId){
-
-    }
-
-    public record DropPartiallyConsumedEvent(String dropId, int qty){
-
     }
 
     // ----------------- Regras internas -----------------
@@ -162,12 +158,10 @@ public final class InventoryServiceImpl implements InventoryService {
         return ii.maxStack();
     }
     private static int qty(ItemInstance ii){
-        try { return (int) ii.getClass().getMethod("quantity").invoke(ii); }
-        catch (Exception e){ return 1; }
+        return ii.quantity();
     }
     private static void setQty(ItemInstance ii, int q){
-        try { ii.getClass().getMethod("setQuantity", int.class).invoke(ii, q); }
-        catch (Exception ignored){}
+        ii.setQuantity(q);
     }
     private static ItemInstance copyWithQuantity(ItemInstance src, int q){
         ItemInstance c = clone(src);
@@ -180,16 +174,19 @@ public final class InventoryServiceImpl implements InventoryService {
     }
 
     // ----------------- Eventos para a UI reagir -----------------
+    private void postGoldChanged(Player p, int gold){
+        bus.post(new GoldChangedEvent(p.getId(), gold));
+    }
 
-    private void postCommonChanged(Player p){ bus.post(new InventoryChangedEvent(p.getId(), InventoryChangedEvent.Area.COMMON)); }
-    private void postEquipChanged(Player p){  bus.post(new InventoryChangedEvent(p.getId(), InventoryChangedEvent.Area.EQUIPMENT)); }
-    private void postGoldChanged(Player p, int gold){ bus.post(new GoldChangedEvent(p.getId(), gold)); }
-    private void postCraftingChanged(Player p){ bus.post(new CraftingBagChangedEvent(p.getId())); }
-
-    public record InventoryChangedEvent(String playerId, Area area) {
-        public enum Area { COMMON, EQUIPMENT }
+    private void postCraftingChanged(Player p){
+        bus.post(new CraftingBagChangedEvent(p.getId()));
     }
     public record GoldChangedEvent(String playerId, int gold) {}
     public record CraftingBagChangedEvent(String playerId) {}
+
+    @Override
+    public void update(float tpf) {
+
+    }
 }
 

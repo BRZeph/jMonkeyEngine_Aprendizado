@@ -22,15 +22,15 @@ public class GameEntityRepository {
         É necessário colocar a classe aqui.
          */
         switch (entity){
-            case Player pl -> {
+            case Player _ -> {
                 lastUser++;
                 return "PLAYER_".concat(String.valueOf(lastUser));
             }
-            case Monster ms -> { // Também implementar classes que extends Monster.
+            case Monster _ -> { // Também implementar classes que extends Monster.
                 lastMonster++;
                 return "MONSTER_".concat(String.valueOf(lastMonster));
             }
-            case DroppedItem droppedItem -> {
+            case DroppedItem _ -> {
                 lastItemStack++;
                 return "ITEM_".concat(String.valueOf(lastItemStack));
             }
@@ -50,6 +50,10 @@ public class GameEntityRepository {
 
     public static void remove(GameEntity entity) {
         entities.remove(entity.getId());
+    }
+
+    public static void remove(String entity) {
+        entities.remove(entity);
     }
 }
 

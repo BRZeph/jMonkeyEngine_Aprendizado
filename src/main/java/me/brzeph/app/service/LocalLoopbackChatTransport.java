@@ -13,7 +13,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 
-/** Implementação atual: tudo acontece localmente (single-player). */
+/** Implementação atual: tudo acontece localmente (single-entity). */
 public class LocalLoopbackChatTransport implements ChatTransport {
     private Consumer<ChatBroadcast> onBroadcast;
     private final Supplier<String> myName;
@@ -45,7 +45,7 @@ public class LocalLoopbackChatTransport implements ChatTransport {
                 emit(new ChatMessage(req.channel(), from, null, req.text(), ts));
             }
             case LOCAL -> {
-                // single-player: entrega para você mesmo; se virar multiplayer local, use raio
+                // single-entity: entrega para você mesmo; se virar multiplayer local, use raio
                 emit(new ChatMessage(ChatChannel.LOCAL, from, null, req.text(), ts));
             }
             case WHISPER -> {

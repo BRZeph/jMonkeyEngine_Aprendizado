@@ -16,7 +16,7 @@ public final class UIInventorySlot extends Widget<UIInventorySlot> {
     private final UIItemIcon icon = new UIItemIcon();
     private InventoryItem item;
     private ItemCategory.EquipSlot accepts = ItemCategory.EquipSlot.COMMON_SLOT;
-    private int index = -1;                    // para saber qual slot é (ex.: 0..N-1)
+    private int index = -1;
     private boolean highlight, dragOver;
 
     // config
@@ -43,6 +43,8 @@ public final class UIInventorySlot extends Widget<UIInventorySlot> {
                 // aceite apenas materiais de crafting (o "saco" agrega internamente)
                     it.definition().category() == ItemCategory.CRAFTING_MATERIAL;
             case POTION1, POTION2, POTION3 -> it.definition().category() == ItemCategory.POTION;
+            case HEAD, CHEST, LEGGINGS, BOOTS, GAUNTLET, BRACER ->
+                it.definition().category() == ItemCategory.ARMOR;
             default ->
                 // slots de equipamento: requer EquipSpec que permita esse slot
                     it.definition().equip()

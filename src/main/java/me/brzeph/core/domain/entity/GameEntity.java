@@ -4,6 +4,7 @@ import com.jme3.bullet.control.*;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
+import me.brzeph.app.systems.impl.collisionSystem.CollisionSystem;
 import me.brzeph.infra.repository.GameEntityRepository;
 
 import static me.brzeph.core.constants.CollisionConstants.*;
@@ -40,6 +41,14 @@ public abstract class GameEntity {
             case CONTROL_TYPE_GC -> characterNode.getControl(GhostControl.class);
             default -> throw new RuntimeException("Unknown control type: " + controlType);
         };
+    }
+
+    public void deSpawn(CollisionSystem collisionSystem){
+        collisionSystem.deSpawn(this); // Removes from PhysicsSpace.
+        if(!characterNode.removeFromParent()){// Removes for rootNode.
+            throw new RuntimeException("Failed to remove character node");
+        }
+        characterNode.detachAllChildren();
     }
 
     public String getControlString(){

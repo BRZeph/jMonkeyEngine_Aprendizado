@@ -5,8 +5,6 @@ import com.jme3.input.event.MouseButtonEvent;
 import com.jme3.input.event.MouseMotionEvent;
 import me.brzeph.app.systems.SystemAbs;
 import me.brzeph.core.domain.entity.item.InventoryItem;
-import me.brzeph.core.domain.entity.item.ItemInstance;
-import me.brzeph.core.domain.entity.player.Player;
 import me.brzeph.core.domain.gui.core.events.UIDragEndEvent;
 import me.brzeph.core.domain.gui.core.events.UIDragMoveEvent;
 import me.brzeph.core.domain.gui.core.events.UIDragStartEvent;
@@ -14,13 +12,13 @@ import me.brzeph.core.domain.gui.core.others.*;
 import me.brzeph.core.domain.gui.core.screens.*;
 
 import com.jme3.scene.Node;
+import me.brzeph.core.domain.gui.core.widgets.UIInventorySlot;
+import me.brzeph.core.domain.gui.core.widgets.Widget;
 import me.brzeph.core.domain.gui.impl.adapters_jme.JmeFlyCamBridge;
 import me.brzeph.core.domain.gui.impl.adapters_jme.UIAssetsJme;
 import me.brzeph.core.domain.gui.impl.adapters_jme.UIBackendJme;
-import me.brzeph.core.domain.gui.impl.inventory.InventoryServiceImpl;
 import me.brzeph.core.domain.gui.impl.screens.PlayerInventoryPlugin;
 import me.brzeph.infra.events.screen.*;
-import me.brzeph.infra.repository.GameEntityRepository;
 
 import java.util.*;
 
@@ -76,6 +74,7 @@ public class GUISystem extends SystemAbs {
     private RawInputListener raw;
 
     private InventoryItem holdingItem = null;
+    private UIInventorySlot holdingItemWidget = null;
     private float holdingItemXPos = 0f;
     private float holdingItemYPos = 0f;
 
@@ -111,9 +110,13 @@ public class GUISystem extends SystemAbs {
         beforeDraw();
         screens.drawAll();
         if (holdingItem != null){
-//            holdingItem.definition().getIconPath();
-            uiBackend.drawRect(new Rect(holdingItemXPos - 32, holdingItemYPos - 32, 64f,64f),
-                    new Color(100,100,100,1), 3f);
+            String path = holdingItem.definition().getIconPath();
+            if (uiAssets.image(path).isPresent()){
+                uiBackend.drawImage(uiAssets.image(path).get(), new Rect(holdingItemXPos - 32, holdingItemYPos - 32, 64f, 64f));
+            } else {
+                uiBackend.drawRect(new Rect(holdingItemXPos - 32, holdingItemYPos - 32, 64f, 64f),
+                        new Color(100, 100, 100, 1), 3f);
+            }
         }
     }
 
@@ -131,7 +134,6 @@ public class GUISystem extends SystemAbs {
     private void initPlayerInventory() {
         registerPlugin(PLAYER_INVENTORY, new PlayerInventoryPlugin());
         updateScreenParams(PLAYER_INVENTORY, new ScreenParams()
-                .put("gold", 512)
                 .put("weight", 77.4954f)
                 .put("maxWeight", 150f)
         );
@@ -169,7 +171,11 @@ public class GUISystem extends SystemAbs {
 
         ScreenParams params = finalParamsFor(key, override);
 
-        Screen screen = plugin.build(new ScreenContext(), params);
+        Screen screen = screens.getById(key);
+//        if (screen == null){
+            screen = plugin.build(new ScreenContext(), params);
+//        }
+
         if (screen == null){
             System.err.println("[GUI] Plugin " + key + " retornou null");
             return null;
@@ -189,7 +195,7 @@ public class GUISystem extends SystemAbs {
         stickyParams.put(key, stickyParams.getOrDefault(key, new ScreenParams()).copy().putAll(patch));
         if (isOpen(key)){
             close(key);
-            open(key, stickyParams.get(key), /*bring*/true, /*allowMultiple*/false);
+            open(key, stickyParams.get(key), true, false);
         }
     }
 
@@ -238,7 +244,8 @@ public class GUISystem extends SystemAbs {
     // GUISystemAbs
     protected void subscribeCoreEvents(){
         getBus().subscribe(UIDragStartEvent.class, e -> {
-            this.holdingItem = e.item();
+            holdingItem = e.item();
+            holdingItemWidget = e.widget();
         });
 
         getBus().subscribe(UIDragMoveEvent.class, e -> {
@@ -247,9 +254,21 @@ public class GUISystem extends SystemAbs {
         });
 
         getBus().subscribe(UIDragEndEvent.class, e -> {
-            /*
-            Checar de dropar item aqui.
-             */
+            for(Screen s : instances.values()){
+                if (s.getBounds().contains(holdingItemXPos, holdingItemYPos)){
+                    Widget w  = s.hit(holdingItemXPos, holdingItemYPos);
+                    if (w == null) break;
+                    if (w instanceof UIInventorySlot){
+                        UIInventorySlot slot = (UIInventorySlot) w;
+                        if (!slot.canAccept(holdingItem)) break;
+                        InventoryItem item = slot.getItem();
+                        holdingItemWidget.setItem(item);
+                        slot.setItem(holdingItem);
+                    }
+                    break;
+                }
+            }
+            holdingItemWidget = null;
             holdingItem = null;
             holdingItemYPos = 0;
             holdingItemXPos = 0;
@@ -269,6 +288,10 @@ public class GUISystem extends SystemAbs {
         });
 
         getBus().subscribe(ScreenToggleRequest.class, r -> {
+            if (Objects.equals(r.key(), PLAYER_INVENTORY)){
+                holdingItemWidget = null;
+                holdingItem = null;
+            }
             toggle(r.key());
         });
 
@@ -276,19 +299,7 @@ public class GUISystem extends SystemAbs {
             bringToFront(r.key());
         });
 
-        getBus().subscribe(InventoryServiceImpl.InventoryChangedEvent.class, e -> {
-            Player player = (Player) GameEntityRepository.findById(e.playerId());
-            if (e.area() == InventoryServiceImpl.InventoryChangedEvent.Area.COMMON){
-                // Recarregue somente os slots comuns visíveis:
-                // ex.: para i alterados -> InventoryAdapter.refreshCommonSlot(slots[i], port, i);
-                // Se não guarda a referência dos slots, pode reconstruir o grid (custo ok se raro).
-            } else {
-                // EQUIPMENT: atualize apenas os slots de equipamento
-            }
-        });
-
-        getBus().subscribe(InventoryServiceImpl.GoldChangedEvent.class, e -> {
-            System.out.println("Chamando evento: " + e);
+        getBus().subscribe(InventorySystem.GoldChangedEvent.class, e -> {
             if (isOpen(PLAYER_INVENTORY)) {
                 updateScreenParams(PLAYER_INVENTORY, new ScreenParams().put("gold", e.gold()));
             }
