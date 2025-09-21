@@ -16,8 +16,7 @@ import me.brzeph.infra.jme.adapter.audio.PlayerAudioAdapter;
 import me.brzeph.infra.repository.GameEntityRepository;
 
 import static me.brzeph.core.constants.GUIConstants.PlayerConstants.PLAYER_INVENTORY;
-import static me.brzeph.core.constants.ItemConstants.COIN_DEF;
-import static me.brzeph.core.constants.ItemConstants.MOCK_ITEM_DEF;
+import static me.brzeph.core.constants.ItemConstants.*;
 import static me.brzeph.core.constants.PlayerConstants.PLAYER_WALK_SPEED;
 import static me.brzeph.core.constants.PlayerConstants.PLAYER_RUN_SPEED;
 
@@ -117,6 +116,10 @@ public class PlayerSystem extends SystemAbs {
 
     public void giveStarterItems(Player player) {
         inventorySystem.addItem(player, new ItemInstance(COIN_DEF, 20), false);
+        inventorySystem.addItem(player, new ItemInstance(MOCK_ITEM_DEF_HELMET, 1), false);
+        inventorySystem.addItem(player, new ItemInstance(MOCK_ITEM_DEF_HELMET, 1), false);
+        inventorySystem.addItem(player, new ItemInstance(MOCK_ITEM_DEF_CHESTPLATE, 1), false);
+        inventorySystem.addItem(player, new ItemInstance(MOCK_ITEM_DEF_CHESTPLATE, 1), false);
 //        for (int i = 0; i < 35; i++){
 //            inventorySystem.addItem(player, new ItemInstance(MOCK_ITEM_DEF, 1), false);
 //        }
@@ -128,10 +131,6 @@ public class PlayerSystem extends SystemAbs {
 
     public void setCam(Camera cam) {
         this.cam = cam;
-    }
-
-    public void inventoryJustToggled(){
-        this.chatOpen = !this.chatOpen;
     }
 
     public InventorySystem getInventorySystem() {

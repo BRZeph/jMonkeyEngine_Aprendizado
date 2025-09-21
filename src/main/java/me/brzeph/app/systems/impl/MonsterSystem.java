@@ -2,7 +2,6 @@ package me.brzeph.app.systems.impl;
 
 import com.jme3.math.Vector3f;
 import me.brzeph.app.systems.SystemAbs;
-import me.brzeph.core.domain.chat.ChatChannel;
 import me.brzeph.core.domain.entity.CharacterStats;
 import me.brzeph.core.domain.entity.EntityType;
 import me.brzeph.core.domain.entity.player.Player;
@@ -23,12 +22,10 @@ public class MonsterSystem extends SystemAbs {
 
     private final List<Monster> monsterList = new ArrayList<>();
     private final PlayerSystem playerSystem;
-    private final ChatSystem chatSystem;
     private final MonsterAudioAdapter monsterAudio;
 
     public MonsterSystem() {
         playerSystem = (PlayerSystem) getSystem(PlayerSystem.class);
-        chatSystem = (ChatSystem) getSystem(ChatSystem.class);
         monsterAudio = new MonsterAudioAdapter(getAssetManager());
     }
 
@@ -73,7 +70,6 @@ public class MonsterSystem extends SystemAbs {
 
     public void onSpawnEvent(MonsterSpawnEvent monsterSpawnEvent) {
         Monster monster = monsterSpawnEvent.monster();
-        chatSystem.send(ChatChannel.GLOBAL, "", "Spawning monster: " + monster.getId());
         monsterList.add(monster);
         getEntityFactory().build(monster, getRoot());
         monsterAudio.playSoundAt(monster, "spawn_sound");

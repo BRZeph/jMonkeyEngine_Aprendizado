@@ -3,8 +3,10 @@ package me.brzeph.app.systems.impl;
 import com.jme3.input.RawInputListener;
 import com.jme3.input.event.MouseButtonEvent;
 import com.jme3.input.event.MouseMotionEvent;
+import me.brzeph.app.service.InputService;
 import me.brzeph.app.systems.SystemAbs;
-import me.brzeph.core.domain.entity.item.InventoryItem;
+import me.brzeph.core.domain.entity.item.ItemInstance;
+import me.brzeph.core.domain.entity.player.Player;
 import me.brzeph.core.domain.gui.core.events.UIDragEndEvent;
 import me.brzeph.core.domain.gui.core.events.UIDragMoveEvent;
 import me.brzeph.core.domain.gui.core.events.UIDragStartEvent;
@@ -49,7 +51,6 @@ public class GUISystem extends SystemAbs {
             this.size=size;
         }
     }
-
     // ---- Estado do sistema ----
     protected Node uiNode;
     protected FontManager fonts;
@@ -73,7 +74,7 @@ public class GUISystem extends SystemAbs {
     private final Map<String, ScreenParams> stickyParams = new HashMap<>();
     private RawInputListener raw;
 
-    private InventoryItem holdingItem = null;
+    private ItemInstance holdingItem = null;
     private UIInventorySlot holdingItemWidget = null;
     private float holdingItemXPos = 0f;
     private float holdingItemYPos = 0f;
@@ -136,9 +137,10 @@ public class GUISystem extends SystemAbs {
         updateScreenParams(PLAYER_INVENTORY, new ScreenParams()
                 .put("weight", 77.4954f)
                 .put("maxWeight", 150f)
+                .put("player", ((PlayerSystem) getSystem(PlayerSystem.class)).getPlayer())
         );
         updateScreenParams(PLAYER_INVENTORY, mergeDefaultsWith());
-        onClick(PLAYER_INVENTORY_CLOSE_BTN_NAME, () -> close(PLAYER_INVENTORY));
+        onClick(PLAYER_INVENTORY_CLOSE_BTN_NAME, () -> toggle(PLAYER_INVENTORY));
     }
 
     protected ScreenPlugin resolvePlugin(String key){
@@ -241,9 +243,9 @@ public class GUISystem extends SystemAbs {
 
     // ---------------- eventos padrão ----------------
 
-    // GUISystemAbs
     protected void subscribeCoreEvents(){
         getBus().subscribe(UIDragStartEvent.class, e -> {
+            if (!e.widget().isStartDrag()) return;
             holdingItem = e.item();
             holdingItemWidget = e.widget();
         });
@@ -254,16 +256,25 @@ public class GUISystem extends SystemAbs {
         });
 
         getBus().subscribe(UIDragEndEvent.class, e -> {
+            if (holdingItemWidget == null || holdingItem == null){
+                holdingItemWidget = null;
+                holdingItem = null;
+                holdingItemYPos = 0;
+                holdingItemXPos = 0;
+                return;
+            }
             for(Screen s : instances.values()){
                 if (s.getBounds().contains(holdingItemXPos, holdingItemYPos)){
-                    Widget w  = s.hit(holdingItemXPos, holdingItemYPos);
+                    Widget<?> w = s.hit(holdingItemXPos, holdingItemYPos);
                     if (w == null) break;
-                    if (w instanceof UIInventorySlot){
-                        UIInventorySlot slot = (UIInventorySlot) w;
+                    if (w instanceof UIInventorySlot slot){
+                        Player player = ((PlayerSystem)getSystem(PlayerSystem.class)).getPlayer();
                         if (!slot.canAccept(holdingItem)) break;
-                        InventoryItem item = slot.getItem();
-                        holdingItemWidget.setItem(item);
-                        slot.setItem(holdingItem);
+                        ItemInstance item = slot.getItem();
+                        if(player.getInventory().swapItems(holdingItemWidget, slot)) {
+                            holdingItemWidget.setItem(item);
+                            slot.setItem(holdingItem);
+                        }
                     }
                     break;
                 }
@@ -275,7 +286,24 @@ public class GUISystem extends SystemAbs {
         });
 
         getBus().subscribe(UIScreenClickEvent.class, e -> {
-            Runnable r = onClickByWidget.get(e.widgetId());
+            Runnable r = onClickByWidget.get(e.widget().id());
+            if (r != null){
+                r.run();
+            } else if(e.widget() instanceof UIInventorySlot slot){
+                boolean shiftDown = ((InputSystem)getSystem(InputSystem.class)).beingHeldDown(InputService.InputAction.SHIFT);
+                if (!shiftDown) {
+                    return;
+                }
+                Player player = ((PlayerSystem)getSystem(PlayerSystem.class)).getPlayer();
+                if (!slot.canAccept(holdingItem)) return;
+                if(player.getInventory().shiftEquipItem(slot)){
+                    slot.setItem(null);
+                }
+            }
+        });
+
+        getBus().subscribe(UIScreenButtonClickEvent.class, e -> {
+            Runnable r = onClickByWidget.get(e.buttonId());
             if (r != null) r.run();
         });
 
@@ -298,13 +326,6 @@ public class GUISystem extends SystemAbs {
         getBus().subscribe(ScreenBringToFrontRequest.class, r -> {
             bringToFront(r.key());
         });
-
-        getBus().subscribe(InventorySystem.GoldChangedEvent.class, e -> {
-            if (isOpen(PLAYER_INVENTORY)) {
-                updateScreenParams(PLAYER_INVENTORY, new ScreenParams().put("gold", e.gold()));
-            }
-        });
-
     }
 
     // ---------------- hooks dependentes da engine ----------------

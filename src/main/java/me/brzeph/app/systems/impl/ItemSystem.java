@@ -5,7 +5,6 @@ import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import me.brzeph.app.systems.SystemAbs;
-import me.brzeph.core.domain.chat.ChatChannel;
 import me.brzeph.core.domain.entity.GameEntity;
 import me.brzeph.core.domain.entity.item.DroppedItem;
 import me.brzeph.core.domain.entity.item.ItemInstance;
@@ -22,7 +21,6 @@ import static me.brzeph.core.constants.ItemConstants.PREFAB_RESOLVER;
 
 public class ItemSystem extends SystemAbs {
     private final List<String> droppedItems = new ArrayList<>();
-    private final ChatSystem chatSystem;
 
     private static final float OSCILLATION_SPEED = 2f; // Velocidade do movimento (quanto maior, mais rápido o item sobe e desce)
     private float baseHeight = 3f; // A altura base do item, a partir do chão
@@ -30,15 +28,14 @@ public class ItemSystem extends SystemAbs {
     private float currentTime = 0f; // Variável para controlar o tempo
 
     public ItemSystem() {
-        chatSystem = (ChatSystem) getSystem(ChatSystem.class);
+
     }
 
     public void initialize(){
         DroppedItem drop = ItemFactory.createDropFrom(
                 new ItemInstance(COIN_DEF, 25),
                 new Vector3f(10, 0, 5),
-                Quaternion.IDENTITY,
-                PREFAB_RESOLVER
+                Quaternion.IDENTITY
         );
         getBus().post(new DropItemEvent(drop));
     }
@@ -61,7 +58,6 @@ public class ItemSystem extends SystemAbs {
 
     public void DropItemEvent(DropItemEvent dropItemEvent) {
         DroppedItem item = dropItemEvent.item();
-        chatSystem.send(ChatChannel.GLOBAL, "", "Spawning item: " + item);
         if(item == null) return;
         getEntityFactory().build(item, getRoot());
         droppedItems.add(item.getId());

@@ -1,4 +1,4 @@
-package me.brzeph.app.systems.impl.collisionHandler;
+package me.brzeph.app.systems.impl.collisionSystem.handlers;
 
 import me.brzeph.core.domain.entity.item.DroppedItem;
 import me.brzeph.core.domain.entity.player.Player;

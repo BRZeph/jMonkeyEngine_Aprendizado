@@ -2,17 +2,42 @@ package me.brzeph.core.domain.entity.item;
 
 import me.brzeph.core.domain.gui.core.others.Color;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
-/** Categorias e raridades básicas (expanda à vontade) */
+import static me.brzeph.core.domain.entity.item.ItemCategory.EquipSlot.*;
+
 public enum ItemCategory {
-    ARMOR,
-    WEAPON,
-    TRINKET,
-    CURRENCY,
-    CRAFTING_MATERIAL,
-    POTION;
+    ARMOR(HELMET, CHESTPLATE, LEGGINGS, BOOTS, GAUNTLET, BRACER),
+    HANDS(MAIN_HAND, OFF_HAND),
+    TRINKET(TRINKET1, TRINKET2, TRINKET3, TRINKET4),
+    CURRENCY(EquipSlot.CURRENCY),
+    CRAFTING_MATERIAL(EquipSlot.CRAFTING_BAG),
+    POTION(POTION1, POTION2, POTION3);
+
+    private final List<EquipSlot> slots;
+
+    ItemCategory(EquipSlot... slots) {
+        this.slots = List.of(slots);
+    }
+
+    public boolean contains(EquipSlot slot){
+        return this.slots.contains(slot);
+    }
+
+    public List<EquipSlot> getSlots() {
+        return slots;
+    }
+
+    public enum EquipSlot {
+        HELMET, CHESTPLATE, LEGGINGS, BOOTS, GAUNTLET, BRACER,
+        TRINKET1, TRINKET2, TRINKET3, TRINKET4,
+        MAIN_HAND, OFF_HAND,
+        POTION1, POTION2, POTION3,
+
+        CRAFTING_BAG,
+        CURRENCY,
+        COMMON_SLOT;
+    }
 
     public enum ItemRarity {
         COMMON(new Color(230,230,230,1)),
@@ -33,18 +58,6 @@ public enum ItemCategory {
         }
     }
 
-    /** Slots possíveis de equipamento (ajuste aos slots do seu jogo) */
-    public enum EquipSlot {
-        HEAD, CHEST, LEGGINGS, BOOTS, GAUNTLET, BRACER, // Armor
-        TRINKET1, TRINKET2, TRINKET3, TRINKET4, // Trinkets
-        MAIN_HAND,
-        OFF_HAND,
-        POTION1, POTION2, POTION3,
-        CURRENCY,
-        CRAFTING_BAG,
-        COMMON_SLOT
-    }
-
     /** Regras de empilhamento: como duas instâncias podem se juntar num mesmo stack */
     public enum StackRule {
         /** Mesmo ItemDefinition, ignora estado (útil para gemas, moedas, materiais padronizados) */
@@ -52,42 +65,15 @@ public enum ItemCategory {
         /** Só empilha se o estado for “novo/inteiro” (cheio de durabilidade/cargas e sem variações) */
         ONLY_IF_PRISTINE,
         /** Estado idêntico (mesmas durabilidade/cargas/enchant/bind/…) */
-        ONLY_IF_IDENTICAL_STATE
+        ONLY_IF_IDENTICAL_STATE,
+        /** Não pode stack */
+        NONE
     }
-
-    /** Vinculação (tradabilidade) */
-    public enum BindKind { NONE, BIND_ON_PICKUP, BIND_ON_EQUIP, BIND_ON_USE }
-
-    /** Alvo lógico de uso (o sistema de efeitos cuidará disso depois) */
-    public enum UseTargetKind { SELF, UNIT, GROUND, NONE }
 
     /** Especificação de pilha (stack) */
     public record StackSpec(int maxStack, StackRule rule) {
         public StackSpec {
             if (maxStack < 1) throw new IllegalArgumentException("maxStack >= 1");
-        }
-    }
-
-    /** Especificação de durabilidade (em alguns jogos “charges” substituem durabilidade) */
-    public record DurabilitySpec(int maxDurability, boolean repairable) {
-        public DurabilitySpec {
-            if (maxDurability <= 0) throw new IllegalArgumentException("maxDurability > 0");
-        }
-    }
-
-    /** Especificação de uso (não implementa efeito — apenas declara intenção) */
-    public record UseSpec(String actionKey, UseTargetKind targetKind, int cooldownMs, Integer maxCharges) {
-        public UseSpec {
-            if (cooldownMs < 0) throw new IllegalArgumentException("cooldownMs >= 0");
-            if (maxCharges != null && maxCharges <= 0) throw new IllegalArgumentException("maxCharges > 0");
-        }
-    }
-
-    public record EquipSpec(Set<EquipSlot> allowedSlots, boolean twoHanded, Map<String, Float> statModifiers) {
-        public EquipSpec {
-            allowedSlots = Set.copyOf(allowedSlots);
-            statModifiers = Map.copyOf(statModifiers);
-            if (allowedSlots.isEmpty()) throw new IllegalArgumentException("allowedSlots cannot be empty");
         }
     }
 

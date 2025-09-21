@@ -1,4 +1,4 @@
-package me.brzeph.app.systems.impl.collisionHandler;
+package me.brzeph.app.systems.impl.collisionSystem.handlers;
 
 import me.brzeph.app.systems.SystemAbs;
 import me.brzeph.app.systems.impl.collisionSystem.CollisionSystem;

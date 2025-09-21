@@ -10,10 +10,11 @@ public interface InventoryPort {
     // Inventário comum
     int commonCapacity();
     ItemInstance getCommon(int index);
+    ItemInstance getCommon(int row, int col);
 
     // Especiais
-    int goldAmount();                               // total de ouro (para o info card)
-    ItemInstance currencyItem();          // opcional: item “moeda” para o slot visual
-    ItemInstance craftingBagSummary();    // opcional: item “saco” para o slot visual
+    int goldAmount();
+    ItemInstance currencyItem();
+    ItemInstance craftingBagSummary();
 }
 

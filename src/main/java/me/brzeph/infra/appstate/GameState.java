@@ -17,7 +17,7 @@ import com.jme3.scene.SceneGraphVisitorAdapter;
 import me.brzeph.app.systems.SystemsWiring;
 import me.brzeph.app.systems.SystemAbs;
 import me.brzeph.app.systems.impl.*;
-import me.brzeph.app.systems.impl.collisionHandler.ItemProximitySystem;
+import me.brzeph.app.systems.impl.collisionSystem.handlers.ItemProximitySystem;
 import me.brzeph.app.systems.impl.collisionSystem.CollisionSystem;
 import me.brzeph.bootstrap.ServiceLocator;
 import me.brzeph.app.systems.impl.InventorySystem;
@@ -39,7 +39,6 @@ public class GameState extends BaseAppState {
     private MonsterSystem monsterSystem;
     private CameraSystem cameraSystem;
     private GUISystem defaultGUISystem;
-    private ChatSystem chatSystem;
     private ItemSystem itemSystem;
     private InputSystem inputSystem;
     private CollisionSystem collisionSystem;
@@ -66,7 +65,6 @@ public class GameState extends BaseAppState {
     public void update(float tpf) {
         collisionSystem.pump();
         itemProximitySystem.update(tpf);
-        chatSystem.update(tpf);
         playerSystem.update(tpf);
         cameraSystem.update(tpf);
         monsterSystem.update(tpf);
@@ -108,7 +106,6 @@ public class GameState extends BaseAppState {
         defaultGUISystem = new GUISystem();
         playerSystem = new PlayerSystem();
         cameraSystem = new CameraSystem();
-        chatSystem = new ChatSystem();
         monsterSystem = new MonsterSystem();
         itemSystem = new ItemSystem();
         inputSystem = new InputSystem();

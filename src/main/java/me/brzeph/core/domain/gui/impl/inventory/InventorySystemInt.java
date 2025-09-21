@@ -1,15 +1,16 @@
 package me.brzeph.core.domain.gui.impl.inventory;
 
+import me.brzeph.core.domain.entity.CharacterEntity;
 import me.brzeph.core.domain.entity.item.DroppedItem;
 import me.brzeph.core.domain.entity.item.ItemInstance;
 import me.brzeph.core.domain.entity.player.Player;
 
 public interface InventorySystemInt {
     /** Tenta adicionar 'item' ao inventário do entity. Retorna quanto entrou e, se sobrar, o restante. */
-    AddResult addItem(Player player, ItemInstance item, boolean autoequip);
+    AddResult addItem(CharacterEntity player, ItemInstance item, boolean autoequip);
 
     /** Atalho para coletar um drop do chão. */
-    AddResult pickup(Player player, DroppedItem drop);
+    AddResult pickup(CharacterEntity player, DroppedItem drop);
 
     record AddResult(int added, ItemInstance remainder) {}
 }

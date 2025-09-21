@@ -2,6 +2,7 @@ package me.brzeph.app.systems.impl;
 
 import me.brzeph.app.systems.SystemAbs;
 import me.brzeph.app.systems.impl.collisionSystem.events.DropConsumedEvent;
+import me.brzeph.core.domain.entity.CharacterEntity;
 import me.brzeph.core.domain.entity.item.DroppedItem;
 import me.brzeph.core.domain.entity.item.ItemCategory;
 import me.brzeph.core.domain.entity.item.ItemDefinition;
@@ -20,29 +21,32 @@ public final class InventorySystem extends SystemAbs implements InventorySystemI
     }
 
     @Override
-    public AddResult addItem(Player player, ItemInstance item, boolean autoEquip) {
+    public AddResult addItem(CharacterEntity entity, ItemInstance item, boolean autoEquip) {
         if (item == null) return new AddResult(0, null);
 
+        if(!(entity instanceof Player player)) {
+            return new AddResult(0, null);
+        }
+
         PlayerInventory inv = player.getInventory();
-        ItemDefinition def  = item.def();
+        ItemDefinition def  = item.definition();
         int qty = qty(item);
 
         // 1) Moeda: vira ouro direto
-        if (def.category() == ItemCategory.CURRENCY) {
+        if (ItemCategory.CURRENCY.contains(def.equipSlot())) {
             inv.addGold(qty);
-            postGoldChanged(player, inv.goldAmount());
             return new AddResult(qty, null);
         }
 
         // 2) Materiais de crafting: vão para a bag
-        if (def.category() == ItemCategory.CRAFTING_MATERIAL) {
+        if (ItemCategory.CRAFTING_MATERIAL.contains(def.equipSlot())) {
             inv.addToCraftingBag(clone(item)); // pode somar/compactar depois
             postCraftingChanged(player);
             return new AddResult(qty, null);
         }
 
         // 3) Poções: tenta slots POTION1..3 (empilhar se mesma poção e stackável)
-        if (def.category() == ItemCategory.POTION) {
+        if (ItemCategory.POTION.contains(def.equipSlot())) {
             int added = tryAddToPotionSlots(inv, item);
             setQty(item, qty - added); // sobrou
             // continua tentando no comum
@@ -62,7 +66,12 @@ public final class InventorySystem extends SystemAbs implements InventorySystemI
     }
 
     @Override
-    public AddResult pickup(Player player, DroppedItem drop) {
+    public AddResult pickup(CharacterEntity entity, DroppedItem drop) {
+
+        if(!(entity instanceof Player player)) {
+            return new AddResult(0, null);
+        }
+
         AddResult res = addItem(player, drop.getItemInstance(), false);
         if (res.added() == 0) return res;
         if (res.remainder() == null) {
@@ -149,10 +158,10 @@ public final class InventorySystem extends SystemAbs implements InventorySystemI
     // ----------------- Helpers de item/stack -----------------
 
     private static boolean sameItem(ItemInstance a, ItemInstance b){
-        return a.def().id().equals(b.def().id());
+        return a.definition().id().equals(b.definition().id());
     }
     private static boolean isStackable(ItemInstance ii){
-        return ii.def().isStackable();
+        return ii.definition().isStackable();
     }
     private static int maxStack(ItemInstance ii){
         return ii.maxStack();
@@ -174,14 +183,10 @@ public final class InventorySystem extends SystemAbs implements InventorySystemI
     }
 
     // ----------------- Eventos para a UI reagir -----------------
-    private void postGoldChanged(Player p, int gold){
-        bus.post(new GoldChangedEvent(p.getId(), gold));
-    }
 
     private void postCraftingChanged(Player p){
         bus.post(new CraftingBagChangedEvent(p.getId()));
     }
-    public record GoldChangedEvent(String playerId, int gold) {}
     public record CraftingBagChangedEvent(String playerId) {}
 
     @Override

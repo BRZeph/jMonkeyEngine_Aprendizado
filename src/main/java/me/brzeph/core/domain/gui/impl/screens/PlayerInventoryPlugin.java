@@ -1,10 +1,6 @@
 package me.brzeph.core.domain.gui.impl.screens;
 
-import me.brzeph.app.systems.SystemAbs;
-import me.brzeph.app.systems.impl.PlayerSystem;
-import me.brzeph.core.domain.entity.item.InventoryItem;
-import me.brzeph.core.domain.entity.item.ItemCategory;
-import me.brzeph.core.domain.entity.item.ItemInstance;
+import me.brzeph.core.domain.entity.player.Player;
 import me.brzeph.core.domain.gui.core.layout.ColumnLayout;
 import me.brzeph.core.domain.gui.core.layout.LayoutParams;
 import me.brzeph.core.domain.gui.core.layout.RowLayout;
@@ -13,18 +9,21 @@ import me.brzeph.core.domain.gui.core.others.Color;
 import me.brzeph.core.domain.gui.core.others.UIRoot;
 import me.brzeph.core.domain.gui.core.screens.*;
 import me.brzeph.core.domain.gui.core.widgets.*;
-import me.brzeph.core.domain.gui.impl.inventory.InventoryPort;
 import me.brzeph.core.domain.gui.impl.inventory.PlayerInventory;
-import me.brzeph.core.factory.ItemFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static me.brzeph.core.constants.GUIConstants.PlayerConstants.PLAYER_INVENTORY;
 import static me.brzeph.core.constants.GUIConstants.PlayerConstants.PLAYER_INVENTORY_CLOSE_BTN_NAME;
+import static me.brzeph.core.domain.entity.item.ItemCategory.EquipSlot.HELMET;
 
 public final class PlayerInventoryPlugin implements ScreenPlugin {
 
-    @Override public String id() { return PLAYER_INVENTORY; }
+    @Override
+    public String id() {
+        return PLAYER_INVENTORY;
+    }
 
     @Override
     public Screen build(ScreenContext ctx, ScreenParams params) {
@@ -33,11 +32,11 @@ public final class PlayerInventoryPlugin implements ScreenPlugin {
         float sh        = params.has("screenH")   ? params.get("screenH", Float.class) : 720f;
         float weight    = params.has("weight")    ? params.get("weight", Float.class)  : 23f;
         float maxWeight = params.has("maxWeight") ? params.get("maxWeight", Float.class): 60f;
+        Player player   = params.has("player")    ? params.get("player", Player.class) : null;
 
         // Player / Inventário (fonte de dados)
-        var player = ((PlayerSystem)SystemAbs.getSystem(PlayerSystem.class)).getPlayer();
+        assert player != null;
         PlayerInventory inv = player.getInventory();
-        int gold = inv.goldAmount();
 
         // ----------------- HEADER -----------------
         UIText title = new UIText().text("Inventário").font("title");
@@ -56,7 +55,7 @@ public final class PlayerInventoryPlugin implements ScreenPlugin {
                 .height(12f)
                 .label(String.format("Peso: %.00f / %.00f", weight, maxWeight));
 
-        UIText goldTxt = new UIText().text("Ouro: " + gold).font("default");
+        UIText goldTxt = new UIText().text("Ouro: " + inv.goldAmount()).font("default");
 
         Panel infoStrip = new Panel()
                 .background(Color.rgba(0.12f,0.12f,0.14f,0.95f))
@@ -71,12 +70,12 @@ public final class PlayerInventoryPlugin implements ScreenPlugin {
                 .layout(new ColumnLayout(10f, 10f))
                 .add(new UIText().text("Equipamentos").font("default").layout(LayoutParams.wrap()))
                 .add(new UISeparator().thickness(1f).color(Color.gray(0.18f,1f)).layout(LayoutParams.wrap()))
-                .add(InventoryAdapter.makeEquipmentPanel(PLAYER_INVENTORY, inv, 8f, 6f)
+                .add(InventoryAdapter.makeEquipmentPanel(PLAYER_INVENTORY, inv, 8f, 10f)
                         .layout(LayoutParams.wrap()));
 
         // ----------------- MOCHILA (card com grid comum) -----------------
         UIGrid commonGrid = new UIGrid().layout(LayoutParams.flex(1f));
-        InventoryAdapter.fillCommonGrid(commonGrid, inv, PLAYER_INVENTORY, 9, 4);
+        InventoryAdapter.fillCommonGrid(commonGrid, inv, PLAYER_INVENTORY);
 
         Panel bagCard = new Panel()
                 .background(Color.rgba(0.10f,0.10f,0.12f,0.92f))
@@ -99,9 +98,9 @@ public final class PlayerInventoryPlugin implements ScreenPlugin {
         Panel window = new Panel()
                 .background(Color.rgba(0.08f,0.08f,0.09f,0.94f))
                 .layout(new ColumnLayout(14f, 14f))
-                .add(header.layout(LayoutParams.wrap()))
                 .add(infoStrip.layout(LayoutParams.wrap()))
-                .add(body.layout(LayoutParams.wrap()));
+                .add(body.layout(LayoutParams.wrap()))
+                .add(header.layout(LayoutParams.wrap()));
 
         UIRoot ui = new UIRoot(window);
 

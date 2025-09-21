@@ -3,11 +3,12 @@ package me.brzeph.app.systems.impl;
 import com.jme3.input.controls.ActionListener;
 import me.brzeph.app.systems.SystemAbs;
 import me.brzeph.core.domain.entity.player.Player;
-import me.brzeph.infra.events.chat.ChatToggle;
 import me.brzeph.infra.events.entities.player.PlayerJumpEvent;
 import me.brzeph.infra.events.entities.player.PlayerRunEvent;
 import me.brzeph.infra.events.entities.player.PlayerWalkEvent;
 import me.brzeph.infra.events.screen.ScreenToggleRequest;
+
+import java.util.ArrayList;
 
 import static me.brzeph.app.service.InputService.*;
 import static me.brzeph.app.service.InputService.InputAction.*;
@@ -18,6 +19,7 @@ public class InputSystem extends SystemAbs implements ActionListener {
     private final PlayerSystem playerSystem;
     private final GUISystem guiSystem;
     private final Player player;
+    private final ArrayList<InputAction> beingHeldDown = new ArrayList<>();
 
     public InputSystem() {
         bindKeys(this, getApp().getInputManager());
@@ -37,6 +39,11 @@ public class InputSystem extends SystemAbs implements ActionListener {
             if (playerSystem.getPlayer().isInventoryOpen())
          */
         InputAction action = InputAction.findActionByName(name);
+        if(isPressed && action != null) {
+            beingHeldDown.add(action);
+        } else if(!isPressed && action != null) {
+            beingHeldDown.remove(action);
+        }
         if (action == SPACE){
             getBus().post(new PlayerJumpEvent(player.getId(), isPressed));
         }
@@ -53,8 +60,12 @@ public class InputSystem extends SystemAbs implements ActionListener {
             getBus().post(new ScreenToggleRequest(PLAYER_INVENTORY));
         }
         if (action == ENTER){
-            getBus().post(new ChatToggle(player.getId(), isPressed));
+//            getBus().post(new ChatToggle(player.getId(), isPressed));
         }
+    }
+
+    public boolean beingHeldDown(InputAction action){
+        return beingHeldDown.contains(action);
     }
 
     @Override

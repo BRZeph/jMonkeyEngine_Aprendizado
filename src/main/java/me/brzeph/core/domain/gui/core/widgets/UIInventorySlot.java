@@ -1,12 +1,13 @@
 package me.brzeph.core.domain.gui.core.widgets;
 
-import me.brzeph.core.domain.entity.item.InventoryItem;
 import me.brzeph.core.domain.entity.item.ItemCategory;
+import me.brzeph.core.domain.entity.item.ItemInstance;
 import me.brzeph.core.domain.gui.core.others.Color;
 import me.brzeph.core.domain.gui.core.others.Rect;
 import me.brzeph.core.domain.gui.core.others.Size;
 
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 
 import static me.brzeph.core.constants.ItemConstants.COIN_ITEM_ID;
 import static me.brzeph.core.domain.gui.core.others.Rect.strokeRect;
@@ -14,48 +15,63 @@ import static me.brzeph.core.domain.gui.core.others.Rect.strokeRect;
 public final class UIInventorySlot extends Widget<UIInventorySlot> {
 
     private final UIItemIcon icon = new UIItemIcon();
-    private InventoryItem item;
+    private ItemInstance item;
     private ItemCategory.EquipSlot accepts = ItemCategory.EquipSlot.COMMON_SLOT;
     private int index = -1;
     private boolean highlight, dragOver;
+    private static final List<UIInventorySlot> registeredSlots = new ArrayList<>();
 
-    // config
-    public UIInventorySlot index(int i){ this.index = i; return this; }
-    public UIInventorySlot accepts(ItemCategory.EquipSlot k){ this.accepts = k; return this; }
-
-    // item API
-    public UIInventorySlot setItem(InventoryItem it){ this.item = it; icon.item(it); return this; }
-    public InventoryItem getItem(){ return item; }
-    public boolean isEmpty(){ return item == null; }
-
-    // regra simples de aceitação
-    public boolean canAccept(InventoryItem it){
-        if (it == null) return true; // limpar o slot
-
-        return switch (accepts) {
-            case COMMON_SLOT -> true; // sempre cabe no inventário comum
-
-            case CURRENCY ->
-                // aceite apenas "ouro". Ajuste conforme seu ItemDefinition
-                    it.definition().category() == ItemCategory.CURRENCY
-                            && COIN_ITEM_ID.equalsIgnoreCase(it.definition().id().value());
-            case CRAFTING_BAG ->
-                // aceite apenas materiais de crafting (o "saco" agrega internamente)
-                    it.definition().category() == ItemCategory.CRAFTING_MATERIAL;
-            case POTION1, POTION2, POTION3 -> it.definition().category() == ItemCategory.POTION;
-            case HEAD, CHEST, LEGGINGS, BOOTS, GAUNTLET, BRACER ->
-                it.definition().category() == ItemCategory.ARMOR;
-            default ->
-                // slots de equipamento: requer EquipSpec que permita esse slot
-                    it.definition().equip()
-                            .map(ItemCategory.EquipSpec::allowedSlots)
-                            .map(allowed -> allowed.contains(accepts))
-                            .orElse(false);
-        };
+    public UIInventorySlot() {
+        registeredSlots.add(this);
     }
 
-    // tamanho celula
+    public List<UIInventorySlot> getInventorySlot(ItemCategory.EquipSlot s){
+        List<UIInventorySlot> slots = new ArrayList<>();
+        for(UIInventorySlot slot : registeredSlots){
+            if(slot.getAccepts() == s){
+                slots.add(slot);
+            }
+        }
+        return slots;
+    }
+
+    // config
+    public UIInventorySlot index(int i){
+        this.index = i;
+        return this;
+    }
+
+    public UIInventorySlot accepts(ItemCategory.EquipSlot k){
+        this.accepts = k;
+        return this;
+    }
+
+    // item API
+    public UIInventorySlot setItem(ItemInstance it){
+        this.item = it;
+        icon.item(it);
+        return this;
+    }
+
+    public ItemInstance getItem(){
+        return item;
+    }
+
+    public boolean isEmpty(){
+        return item == null;
+    }
+
+    public ItemCategory.EquipSlot getAccepts() {
+        return accepts;
+    }
+
+    public boolean canAccept(ItemInstance it){
+        if (it == null) return true;
+        return accepts == it.definition().equipSlot() || accepts == ItemCategory.EquipSlot.COMMON_SLOT;
+    }
+
     private static final float CELL = 64f; // TODO: move this inside ItemConstants or GUIConstants.
+
     @Override
     public Size measure(float maxW, float maxH){ return new Size(CELL, CELL); }
 
@@ -89,6 +105,10 @@ public final class UIInventorySlot extends Widget<UIInventorySlot> {
     public UIInventorySlot stableId(String invKey){
         // ex.: inv.slot.12
         return this.id(invKey + ".slot." + index);
+    }
+
+    public int getIndex() {
+        return index;
     }
 }
 

@@ -4,6 +4,7 @@ import me.brzeph.core.domain.gui.core.layout.LayoutParams;
 import me.brzeph.core.domain.gui.core.others.*;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public abstract class Widget<T extends Widget<T>> {
@@ -14,6 +15,7 @@ public abstract class Widget<T extends Widget<T>> {
     protected String assetPath = null;
     protected String fontKey = "default";
     protected LayoutParams lp = LayoutParams.wrap();
+    protected boolean startDrag = true;
 
     @SuppressWarnings("unchecked")
     protected T self(){ return (T) this; }
@@ -28,6 +30,16 @@ public abstract class Widget<T extends Widget<T>> {
     public T font(String key){ this.fontKey = key; return self(); }
     public T layout(LayoutParams lp){ this.lp = lp; return self(); }
     public T add(Widget<?> w){ children.add(w); return self(); }
+
+    public <C extends Widget<?>> List<C> get(Class<C> type) {
+        List<C> list = new ArrayList<>();
+        for(Widget<?> child : children){
+            if(type.isInstance(child)){
+                list.add(type.cast(child));
+            }
+        }
+        return list;
+    }
 
     // Básicos
     public String id(){ return id; }
@@ -56,5 +68,13 @@ public abstract class Widget<T extends Widget<T>> {
             if (h != null) return h;
         }
         return bounds.contains(x,y) ? this : null;
+    }
+
+    public void setStartDrag(boolean startDrag) {
+        this.startDrag = startDrag;
+    }
+
+    public boolean isStartDrag() {
+        return startDrag;
     }
 }

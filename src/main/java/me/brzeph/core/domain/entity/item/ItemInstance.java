@@ -8,17 +8,11 @@ public final class ItemInstance {
     private final ItemDefinition def;
 
     private int quantity;                       // stack atual (>=1)
-    private Integer durability;                 // null se não usar durabilidade
-    private Integer charges;                    // null se não usar charges
-    private long cooldownUntilMs = 0L;          // relógio do servidor/cliente
 
     public ItemInstance(ItemDefinition def, int quantity) {
         this.id = ItemId.newId();
         this.def = Objects.requireNonNull(def);
-        this.quantity = Math.max(1, quantity);
-
-        def.durability().ifPresent(d -> this.durability = d.maxDurability());
-        def.use().ifPresent(u -> { if (u.maxCharges() != null) this.charges = u.maxCharges(); });
+        this.quantity = Math.max(0, quantity);
     }
 
     public boolean isStackable(){
@@ -37,8 +31,12 @@ public final class ItemInstance {
         this.quantity = quantity;
     }
 
+    public void addQuantity(int quantity) {
+        assert quantity + this.quantity < maxStack();
+        this.quantity += quantity;
+    }
+
     public ItemId id() { return id; }
-    public ItemDefinition def() { return def; }
     public int quantity() { return quantity; }
 
     public ItemInstance withQuantity(int newQty) {
@@ -54,7 +52,20 @@ public final class ItemInstance {
 
     public int maxStack() {
         if (!def.isStackable()) return 1;
-        if (this.def().stack().isEmpty()) throw new RuntimeException("StackSpec is empty");
-        return this.def().stack().get().maxStack();
+        if (this.definition().stack().isEmpty()) throw new RuntimeException("StackSpec is empty");
+        return this.definition().stack().get().maxStack();
+    }
+
+    public ItemDefinition definition() {
+        return def;
+    }
+
+    @Override
+    public String toString() {
+        return "ItemInstance{" +
+                "id=" + id +
+                ", def=" + def +
+                ", quantity=" + quantity +
+                '}';
     }
 }
