@@ -5,27 +5,27 @@ import com.jme3.input.event.MouseButtonEvent;
 import com.jme3.input.event.MouseMotionEvent;
 import me.brzeph.app.service.InputService;
 import me.brzeph.app.systems.SystemAbs;
-import me.brzeph.core.domain.entity.item.ItemInstance;
-import me.brzeph.core.domain.entity.player.Player;
-import me.brzeph.core.domain.gui.core.events.UIDragEndEvent;
-import me.brzeph.core.domain.gui.core.events.UIDragMoveEvent;
-import me.brzeph.core.domain.gui.core.events.UIDragStartEvent;
-import me.brzeph.core.domain.gui.core.others.*;
-import me.brzeph.core.domain.gui.core.screens.*;
+import me.brzeph.domain.entity.item.ItemInstance;
+import me.brzeph.domain.entity.player.Player;
+import me.brzeph.domain.gui.core.events.UIDragEndEvent;
+import me.brzeph.domain.gui.core.events.UIDragMoveEvent;
+import me.brzeph.domain.gui.core.events.UIDragStartEvent;
+import me.brzeph.domain.gui.core.others.*;
+import me.brzeph.domain.gui.core.screens.*;
 
 import com.jme3.scene.Node;
-import me.brzeph.core.domain.gui.core.widgets.UIInventorySlot;
-import me.brzeph.core.domain.gui.core.widgets.Widget;
-import me.brzeph.core.domain.gui.impl.adapters_jme.JmeFlyCamBridge;
-import me.brzeph.core.domain.gui.impl.adapters_jme.UIAssetsJme;
-import me.brzeph.core.domain.gui.impl.adapters_jme.UIBackendJme;
-import me.brzeph.core.domain.gui.impl.screens.PlayerInventoryPlugin;
-import me.brzeph.infra.events.screen.*;
+import me.brzeph.domain.gui.core.widgets.UIInventorySlot;
+import me.brzeph.domain.gui.core.widgets.Widget;
+import me.brzeph.domain.gui.impl.adapters_jme.JmeFlyCamBridge;
+import me.brzeph.domain.gui.impl.adapters_jme.UIAssetsJme;
+import me.brzeph.domain.gui.impl.adapters_jme.UIBackendJme;
+import me.brzeph.domain.gui.impl.screens.PlayerInventoryPlugin;
+import me.brzeph.events.screen.*;
 
 import java.util.*;
 
-import static me.brzeph.core.constants.GUIConstants.PlayerConstants.PLAYER_INVENTORY;
-import static me.brzeph.core.constants.GUIConstants.PlayerConstants.PLAYER_INVENTORY_CLOSE_BTN_NAME;
+import static me.brzeph.constants.GUIConstants.PlayerConstants.PLAYER_INVENTORY;
+import static me.brzeph.constants.GUIConstants.PlayerConstants.PLAYER_INVENTORY_CLOSE_BTN_NAME;
 
 
 /**

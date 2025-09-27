@@ -12,13 +12,13 @@ import com.jme3.input.controls.KeyTrigger;
 import com.jme3.math.ColorRGBA;
 import com.jme3.scene.Node;
 import com.jme3.ui.Picture;
-import me.brzeph.infra.events.EventBus;
-import me.brzeph.infra.events.NavigateToEvent;
-import me.brzeph.infra.events.QuitToDesktopEvent;
+import me.brzeph.events.EventBus;
+import me.brzeph.events.NavigateToEvent;
+import me.brzeph.events.QuitToDesktopEvent;
 
 import java.util.Objects;
 
-import static me.brzeph.core.constants.InputKeysConstants.*;
+import static me.brzeph.constants.InputKeysConstants.*;
 
 public class MainMenuState extends BaseAppState {
     private EventBus bus;

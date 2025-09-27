@@ -10,7 +10,7 @@ import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.math.ColorRGBA;
 import com.jme3.scene.Node;
-import me.brzeph.infra.events.EventBus;
+import me.brzeph.events.EventBus;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;

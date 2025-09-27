@@ -5,10 +5,10 @@ import me.brzeph.app.systems.impl.collisionSystem.CollisionSystem;
 import me.brzeph.app.systems.impl.collisionSystem.events.DropConsumedEvent;
 import me.brzeph.app.systems.impl.collisionSystem.events.ItemProximityEnter;
 import me.brzeph.app.systems.impl.collisionSystem.events.ItemProximityExit;
-import me.brzeph.core.domain.entity.GameEntity;
-import me.brzeph.core.domain.entity.enemies.Monster;
-import me.brzeph.core.domain.entity.item.DroppedItem;
-import me.brzeph.core.domain.entity.player.Player;
+import me.brzeph.domain.entity.GameEntity;
+import me.brzeph.domain.entity.enemies.Monster;
+import me.brzeph.domain.entity.item.DroppedItem;
+import me.brzeph.domain.entity.player.Player;
 import me.brzeph.app.systems.impl.InventorySystem;
 import me.brzeph.infra.repository.GameEntityRepository;
 

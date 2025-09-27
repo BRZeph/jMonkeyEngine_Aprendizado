@@ -5,18 +5,16 @@ import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import me.brzeph.app.systems.SystemAbs;
-import me.brzeph.core.domain.entity.GameEntity;
-import me.brzeph.core.domain.entity.item.DroppedItem;
-import me.brzeph.core.domain.entity.item.ItemInstance;
-import me.brzeph.core.factory.ItemFactory;
-import me.brzeph.infra.events.items.DropItemEvent;
+import me.brzeph.domain.entity.item.DroppedItem;
+import me.brzeph.domain.entity.item.ItemInstance;
+import me.brzeph.app.factory.ItemFactory;
+import me.brzeph.events.items.DropItemEvent;
 import me.brzeph.infra.repository.GameEntityRepository;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static me.brzeph.core.constants.ItemConstants.COIN_DEF;
-import static me.brzeph.core.constants.ItemConstants.PREFAB_RESOLVER;
+import static me.brzeph.constants.ItemConstants.COIN_DEF;
 
 
 public class ItemSystem extends SystemAbs {
@@ -59,7 +57,7 @@ public class ItemSystem extends SystemAbs {
     public void DropItemEvent(DropItemEvent dropItemEvent) {
         DroppedItem item = dropItemEvent.item();
         if(item == null) return;
-        getEntityFactory().build(item, getRoot());
+        getEntityFactory().build(item);
         droppedItems.add(item.getId());
     }
 

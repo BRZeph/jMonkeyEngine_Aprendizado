@@ -2,48 +2,46 @@ package me.brzeph.app.systems.impl;
 
 import com.jme3.input.controls.ActionListener;
 import me.brzeph.app.systems.SystemAbs;
-import me.brzeph.core.domain.entity.player.Player;
-import me.brzeph.infra.events.entities.player.PlayerJumpEvent;
-import me.brzeph.infra.events.entities.player.PlayerRunEvent;
-import me.brzeph.infra.events.entities.player.PlayerWalkEvent;
-import me.brzeph.infra.events.screen.ScreenToggleRequest;
+import me.brzeph.domain.entity.player.Player;
+import me.brzeph.events.entities.player.PlayerJumpEvent;
+import me.brzeph.events.entities.player.PlayerRunEvent;
+import me.brzeph.events.entities.player.PlayerWalkEvent;
+import me.brzeph.events.screen.ScreenToggleRequest;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static me.brzeph.app.service.InputService.*;
 import static me.brzeph.app.service.InputService.InputAction.*;
-import static me.brzeph.core.constants.GUIConstants.PlayerConstants.PLAYER_INVENTORY;
+import static me.brzeph.constants.GUIConstants.PlayerConstants.PLAYER_INVENTORY;
 
 public class InputSystem extends SystemAbs implements ActionListener {
 
-    private final PlayerSystem playerSystem;
-    private final GUISystem guiSystem;
-    private final Player player;
+    private PlayerSystem playerSystem;
+    private GUISystem guiSystem;
+    private Player player;
     private final ArrayList<InputAction> beingHeldDown = new ArrayList<>();
 
     public InputSystem() {
         bindKeys(this, getApp().getInputManager());
-        playerSystem = (PlayerSystem) SystemAbs.getSystem(PlayerSystem.class);
-        guiSystem = (GUISystem) SystemAbs.getSystem(GUISystem.class);
+    }
+
+    public void initialize(){
+        playerSystem = getSystem(PlayerSystem.class);
+        guiSystem = getSystem(GUISystem.class);
         player = playerSystem.getPlayer();
     }
 
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
-        /*
-        Quando for fazer multiplayer, os eventos talvez possam ter o nome:
-        [event_name]_[player_id] ou algo do tipo, desta forma posso identificar o entity aqui.
-         */
-        /*
-            Fazer um bando de if usando os sistemas e foda-se.
-            if (playerSystem.getPlayer().isInventoryOpen())
-         */
+
         InputAction action = InputAction.findActionByName(name);
         if(isPressed && action != null) {
             beingHeldDown.add(action);
         } else if(!isPressed && action != null) {
             beingHeldDown.remove(action);
         }
+
         if (action == SPACE){
             getBus().post(new PlayerJumpEvent(player.getId(), isPressed));
         }
@@ -66,6 +64,15 @@ public class InputSystem extends SystemAbs implements ActionListener {
 
     public boolean beingHeldDown(InputAction action){
         return beingHeldDown.contains(action);
+    }
+
+    public boolean beingHeldDown(List<InputAction> action){
+        for (InputAction a : action){
+            if (beingHeldDown.contains(a)){
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

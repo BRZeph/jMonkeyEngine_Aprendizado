@@ -2,15 +2,15 @@ package me.brzeph.app.systems.impl;
 
 import me.brzeph.app.systems.SystemAbs;
 import me.brzeph.app.systems.impl.collisionSystem.events.DropConsumedEvent;
-import me.brzeph.core.domain.entity.CharacterEntity;
-import me.brzeph.core.domain.entity.item.DroppedItem;
-import me.brzeph.core.domain.entity.item.ItemCategory;
-import me.brzeph.core.domain.entity.item.ItemDefinition;
-import me.brzeph.core.domain.entity.item.ItemInstance;
-import me.brzeph.core.domain.entity.player.Player;
-import me.brzeph.core.domain.gui.impl.inventory.InventorySystemInt;
-import me.brzeph.core.domain.gui.impl.inventory.PlayerInventory;
-import me.brzeph.infra.events.EventBus;
+import me.brzeph.domain.entity.CharacterEntity;
+import me.brzeph.domain.entity.item.DroppedItem;
+import me.brzeph.domain.entity.item.ItemCategory;
+import me.brzeph.domain.entity.item.ItemDefinition;
+import me.brzeph.domain.entity.item.ItemInstance;
+import me.brzeph.domain.entity.player.Player;
+import me.brzeph.domain.gui.impl.inventory.InventorySystemInt;
+import me.brzeph.domain.gui.impl.inventory.PlayerInventory;
+import me.brzeph.events.EventBus;
 
 public final class InventorySystem extends SystemAbs implements InventorySystemInt {
 

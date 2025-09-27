@@ -17,18 +17,17 @@ import com.jme3.scene.SceneGraphVisitorAdapter;
 import me.brzeph.app.systems.SystemsWiring;
 import me.brzeph.app.systems.SystemAbs;
 import me.brzeph.app.systems.impl.*;
+import me.brzeph.app.systems.impl.animationSystem.AnimationSystem;
 import me.brzeph.app.systems.impl.collisionSystem.handlers.ItemProximitySystem;
 import me.brzeph.app.systems.impl.collisionSystem.CollisionSystem;
 import me.brzeph.bootstrap.ServiceLocator;
 import me.brzeph.app.systems.impl.InventorySystem;
-import me.brzeph.core.factory.EntityFactory;
-import me.brzeph.infra.events.EventBus;
-import me.brzeph.infra.jme.adapter.JmeAudio;
-import me.brzeph.infra.jme.adapter.JmeRender;
-import me.brzeph.core.factory.WorldFactory;
+import me.brzeph.app.factory.EntityFactory;
+import me.brzeph.app.factory.WorldFactory;
+import me.brzeph.events.EventBus;
 import me.brzeph.infra.jme.adapter.physics.EntityPhysicsAdapter;
 
-import static me.brzeph.core.constants.PhysicsConstants.WORLD_GRAVITY;
+import static me.brzeph.constants.PhysicsConstants.WORLD_GRAVITY;
 
 public class GameState extends BaseAppState {
     // ---- Core (injeções) ----
@@ -44,6 +43,8 @@ public class GameState extends BaseAppState {
     private CollisionSystem collisionSystem;
     private ItemProximitySystem itemProximitySystem;
     private InventorySystem inventorySystem;
+    private AnimationSystem animationSystem;
+    private EntityFactory entityFactory;
 
     // ---- Runtime refs ----
     private BulletAppState bullet;
@@ -95,12 +96,11 @@ public class GameState extends BaseAppState {
         ServiceLocator.put(Node.class, root);
         ServiceLocator.put(EventBus.class, bus);
         ServiceLocator.put(SimpleApplication.class, (SimpleApplication) app);
-        ServiceLocator.put(JmeAudio.class, new JmeAudio(app));
-        ServiceLocator.put(JmeRender.class, new JmeRender(app));
         ServiceLocator.put(AssetManager.class, app.getAssetManager());
         ServiceLocator.put(PhysicsSpace.class, bullet.getPhysicsSpace());
         ServiceLocator.put(EntityFactory.class, new EntityFactory(app.getAssetManager(), bullet.getPhysicsSpace()));
 
+        animationSystem = new AnimationSystem();
         inventorySystem = new InventorySystem();
         collisionSystem = new CollisionSystem();
         defaultGUISystem = new GUISystem();
@@ -113,10 +113,12 @@ public class GameState extends BaseAppState {
 
         SystemsWiring.wireSystems();
 
+        animationSystem.initialize();
         itemSystem.initialize(); // Chamar apenas depois do wireSystems.
-        defaultGUISystem.initialize();
         playerSystem.initialize();
-
+        cameraSystem.initialize();
+        defaultGUISystem.initialize();
+        inputSystem.initialize();
     }
 
     private void initWorld(SimpleApplication sapp) {

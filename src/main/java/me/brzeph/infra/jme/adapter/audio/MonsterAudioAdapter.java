@@ -3,7 +3,7 @@ package me.brzeph.infra.jme.adapter.audio;
 import com.jme3.asset.AssetManager;
 import com.jme3.audio.AudioData;
 import com.jme3.audio.AudioNode;
-import me.brzeph.core.domain.entity.enemies.Monster;
+import me.brzeph.domain.entity.enemies.Monster;
 
 public class MonsterAudioAdapter {
 

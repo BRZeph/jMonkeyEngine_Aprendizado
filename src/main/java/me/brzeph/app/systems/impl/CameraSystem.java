@@ -8,13 +8,15 @@ import com.jme3.renderer.Camera;
 import com.jme3.scene.Spatial;
 import me.brzeph.app.systems.SystemAbs;
 import me.brzeph.bootstrap.ServiceLocator;
+import me.brzeph.domain.entity.player.Player;
 import me.brzeph.infra.jme.adapter.physics.EntityPhysicsAdapter;
 
-import static me.brzeph.core.constants.EnemiesConstants.EPS;
+import static me.brzeph.constants.CharacterConstants.CHARACTER_FATHER_NODE_ID;
+import static me.brzeph.constants.EnemiesConstants.EPS;
 
 public class CameraSystem extends SystemAbs {
-    private final Camera cam;
-    private final Spatial playerNode;
+    private Camera cam;
+    private Spatial playerNode;
     private ChaseCamera chase;
     private Vector3f lookAtOffset = new Vector3f(0, 1.6f, 0); // já usa algo assim
     private float baseDistance = 10f;
@@ -27,6 +29,9 @@ public class CameraSystem extends SystemAbs {
     private CameraMode mode = CameraMode.GAMEPLAY;
 
     public CameraSystem() {
+    }
+
+    public void initialize(){
         this.playerNode = ((PlayerSystem)getSystem(PlayerSystem.class)).getPlayer().getCharacterNode();
         this.cam = initCamera();
         ((PlayerSystem)getSystem(PlayerSystem.class)).setCam(cam);
@@ -97,29 +102,26 @@ public class CameraSystem extends SystemAbs {
         Camera cam = getApp().getCamera();
         Vector3f pivot = playerNode.getWorldTranslation().add(lookAtOffset);
 
-        // direção desejada: do pivot para a câmera atual (mantém yaw/pitch do usuário)
         Vector3f toCam = cam.getLocation().subtract(pivot);
         float curDist = toCam.length();
-        if (curDist < EPS) toCam = cam.getDirection().negate(); else toCam.divideLocal(curDist); // normalize
+        if (curDist < EPS) toCam = cam.getDirection().negate(); else toCam.divideLocal(curDist);
 
-        float desired = baseDistance; // distância-alvo sem obstáculos
+        float desired = baseDistance;
         desired = FastMath.clamp(desired, minDistance, maxDistance);
         Vector3f desiredPos = pivot.add(toCam.mult(desired));
 
-        // Raycast do pivot até a posição desejada
         EntityPhysicsAdapter phys = ServiceLocator.get(EntityPhysicsAdapter.class);
         var hits = phys.rayTest(pivot, desiredPos);
 
         float allowed = desired;
         if (hits != null && !hits.isEmpty()) {
-            // pega o hit mais próximo que NÃO seja o próprio entity
             hits.sort(java.util.Comparator.comparingDouble(com.jme3.bullet.collision.PhysicsRayTestResult::getHitFraction));
             for (var r : hits) {
                 Object uo = r.getCollisionObject().getUserObject();
-                if (isSelf(uo)) continue;           // ignora corpo do entity
-                float f = (float) r.getHitFraction();
+                if (isSelf(uo)) continue;
+                float f = r.getHitFraction();
                 float hitDist = desired * f;
-                allowed = Math.min(allowed, Math.max(minDistance, hitDist - camRadius)); // encurta com margem
+                allowed = Math.min(allowed, Math.max(minDistance, hitDist - camRadius));
                 break;
             }
         }
@@ -137,10 +139,10 @@ public class CameraSystem extends SystemAbs {
     private boolean isSelf(Object uo) {
         if (uo == null) return false;
         if (uo == playerNode) return true;
+        if (uo instanceof Player) return true;
         if (uo instanceof Spatial s) {
-            // se você marcou characterId no Spatial:
-            String a = s.getUserData("characterId");
-            String b = playerNode.getUserData("characterId");
+            String a = s.getUserData(CHARACTER_FATHER_NODE_ID);
+            String b = playerNode.getUserData(CHARACTER_FATHER_NODE_ID);
             return a != null && a.equals(b);
         }
         return false;

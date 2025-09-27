@@ -16,10 +16,10 @@ import me.brzeph.app.systems.impl.collisionSystem.helpers.CollisionProfile;
 import me.brzeph.app.systems.impl.collisionSystem.helpers.CollisionProfiles;
 import me.brzeph.app.systems.impl.collisionSystem.helpers.InteractionMatrix;
 import me.brzeph.bootstrap.ServiceLocator;
-import me.brzeph.core.domain.entity.GameEntity;
-import me.brzeph.core.domain.entity.enemies.Monster;
-import me.brzeph.core.domain.entity.item.DroppedItem;
-import me.brzeph.core.domain.entity.player.Player;
+import me.brzeph.domain.entity.GameEntity;
+import me.brzeph.domain.entity.enemies.Monster;
+import me.brzeph.domain.entity.item.DroppedItem;
+import me.brzeph.domain.entity.player.Player;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -66,7 +66,7 @@ public final class CollisionSystem extends SystemAbs
     // -------- Registro / Anexação --------
 
     public static void attach(GameEntity e){
-        CollisionSystem collisionSystem = (CollisionSystem) getSystem(CollisionSystem.class);
+        CollisionSystem collisionSystem = getSystem(CollisionSystem.class);
         PhysicsControl ctrl =  e.getControl();
         CollisionProfile prof = collisionSystem.profiles.forEntity(e);
         collisionSystem.applyGroups(ctrl, prof);
@@ -79,7 +79,7 @@ public final class CollisionSystem extends SystemAbs
         unregisterLookup(ctrl);
         if (ctrl instanceof GhostControl gc) ghostPrev.remove(gc);
         space.remove(ctrl);
-        ((ItemSystem) getSystem(ItemSystem.class)).deSpawn((DroppedItem)e);
+        getSystem(ItemSystem.class).deSpawn((DroppedItem)e);
     }
 
     // -------- PhysicsCollisionListener --------
@@ -93,7 +93,6 @@ public final class CollisionSystem extends SystemAbs
         long key = pairKey(ea, eb);
         if (!activePairs.contains(key)) {
             activePairs.add(key);
-            // Deferir p/ thread do update
             deferred.add(() -> rules.onContactStart(ea, eb, event));
         } else {
             deferred.add(() -> rules.onContactStay(ea, eb, event));

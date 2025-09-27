@@ -2,10 +2,10 @@ package me.brzeph.app.service;
 
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
-import me.brzeph.core.domain.entity.CharacterEntity;
-import me.brzeph.core.domain.entity.enemies.Monster;
+import me.brzeph.domain.entity.CharacterEntity;
+import me.brzeph.domain.entity.enemies.Monster;
 
-import static me.brzeph.core.constants.EnemiesConstants.EPS;
+import static me.brzeph.constants.EnemiesConstants.EPS;
 
 public class MonsterService {
 

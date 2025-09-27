@@ -5,22 +5,22 @@ import me.brzeph.app.systems.impl.collisionSystem.handlers.ItemProximitySystem;
 import me.brzeph.app.systems.impl.collisionSystem.events.DropConsumedEvent;
 import me.brzeph.app.systems.impl.collisionSystem.events.ItemProximityEnter;
 import me.brzeph.app.systems.impl.collisionSystem.events.ItemProximityExit;
-import me.brzeph.infra.events.entities.enemies.MonsterAggroEvent;
-import me.brzeph.infra.events.entities.enemies.MonsterSpawnEvent;
-import me.brzeph.infra.events.entities.enemies.MonsterWalkEvent;
-import me.brzeph.infra.events.entities.player.PlayerJumpEvent;
-import me.brzeph.infra.events.entities.player.PlayerRunEvent;
-import me.brzeph.infra.events.entities.player.PlayerWalkEvent;
-import me.brzeph.infra.events.items.DropItemEvent;
+import me.brzeph.events.entities.enemies.MonsterAggroEvent;
+import me.brzeph.events.entities.enemies.MonsterSpawnEvent;
+import me.brzeph.events.entities.enemies.MonsterWalkEvent;
+import me.brzeph.events.entities.player.PlayerJumpEvent;
+import me.brzeph.events.entities.player.PlayerRunEvent;
+import me.brzeph.events.entities.player.PlayerWalkEvent;
+import me.brzeph.events.items.DropItemEvent;
 
 public final class SystemsWiring {
 
     public static void wireSystems() {
-        ItemSystem          itemSystem          = (ItemSystem         ) SystemAbs.getSystem(ItemSystem         .class);
-        MonsterSystem       monsterSystem       = (MonsterSystem      ) SystemAbs.getSystem(MonsterSystem      .class);
-        CameraSystem        cameraSystem        = (CameraSystem       ) SystemAbs.getSystem(CameraSystem       .class);
-        PlayerSystem        playerSystem        = (PlayerSystem       ) SystemAbs.getSystem(PlayerSystem       .class);
-        ItemProximitySystem itemProximitySystem = (ItemProximitySystem) SystemAbs.getSystem(ItemProximitySystem.class);
+        ItemSystem          itemSystem          = SystemAbs.getSystem(ItemSystem         .class);
+        MonsterSystem       monsterSystem       = SystemAbs.getSystem(MonsterSystem      .class);
+        CameraSystem        cameraSystem        = SystemAbs.getSystem(CameraSystem       .class);
+        PlayerSystem        playerSystem        = SystemAbs.getSystem(PlayerSystem       .class);
+        ItemProximitySystem itemProximitySystem = SystemAbs.getSystem(ItemProximitySystem.class);
 
         itemSystem.getBus().subscribe(DropItemEvent.class, itemSystem::DropItemEvent);
 

@@ -1,9 +1,9 @@
 package me.brzeph.infra.repository;
 
-import me.brzeph.core.domain.entity.GameEntity;
-import me.brzeph.core.domain.entity.player.Player;
-import me.brzeph.core.domain.entity.enemies.Monster;
-import me.brzeph.core.domain.entity.item.DroppedItem;
+import me.brzeph.domain.entity.GameEntity;
+import me.brzeph.domain.entity.player.Player;
+import me.brzeph.domain.entity.enemies.Monster;
+import me.brzeph.domain.entity.item.DroppedItem;
 
 import java.util.HashMap;
 import java.util.Map;

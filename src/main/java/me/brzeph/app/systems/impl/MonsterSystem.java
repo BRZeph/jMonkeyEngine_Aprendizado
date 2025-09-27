@@ -2,21 +2,23 @@ package me.brzeph.app.systems.impl;
 
 import com.jme3.math.Vector3f;
 import me.brzeph.app.systems.SystemAbs;
-import me.brzeph.core.domain.entity.CharacterStats;
-import me.brzeph.core.domain.entity.EntityType;
-import me.brzeph.core.domain.entity.player.Player;
-import me.brzeph.core.domain.entity.enemies.Monster;
-import me.brzeph.core.domain.entity.enemies.melee.impl.Goblin;
-import me.brzeph.infra.events.entities.enemies.MonsterAggroEvent;
-import me.brzeph.infra.events.entities.enemies.MonsterSpawnEvent;
-import me.brzeph.infra.events.entities.enemies.MonsterWalkEvent;
+import me.brzeph.app.systems.impl.animationSystem.AnimationSystem;
+import me.brzeph.app.systems.impl.animationSystem.AnimationType;
+import me.brzeph.domain.entity.CharacterStats;
+import me.brzeph.domain.entity.EntityType;
+import me.brzeph.domain.entity.player.Player;
+import me.brzeph.domain.entity.enemies.Monster;
+import me.brzeph.domain.entity.enemies.melee.impl.Goblin;
+import me.brzeph.events.entities.enemies.MonsterAggroEvent;
+import me.brzeph.events.entities.enemies.MonsterSpawnEvent;
+import me.brzeph.events.entities.enemies.MonsterWalkEvent;
 import me.brzeph.infra.jme.adapter.audio.MonsterAudioAdapter;
 import me.brzeph.infra.repository.GameEntityRepository;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static me.brzeph.core.constants.EnemiesConstants.GOBLIN_BASE_SPEED;
+import static me.brzeph.constants.EnemiesConstants.GOBLIN_BASE_SPEED;
 
 public class MonsterSystem extends SystemAbs {
 
@@ -31,11 +33,50 @@ public class MonsterSystem extends SystemAbs {
 
     public void initMonster() { // Eventualmente será substituído por initSpawners().
         Player pl = playerSystem.getPlayer();
-        for (int i = 0; i < 5; i ++) {
+        for (int i = 0; i < 1; i ++) {
             getBus().post(
                     new MonsterSpawnEvent(
                             new Goblin(
                                     EntityType.ORC_BRUTE,
+                                    pl.getPosition().add(new Vector3f(0, 3 + i, 0)),
+                                    pl.getRotation(),
+                                    "Goblin",
+                                    new CharacterStats(
+                                            1, 1, 1, GOBLIN_BASE_SPEED, 30f, 2f
+                                    )
+                            )
+                    )
+            );
+            getBus().post(
+                    new MonsterSpawnEvent(
+                            new Goblin(
+                                    EntityType.SKELETON,
+                                    pl.getPosition().add(new Vector3f(0, 3 + i, 0)),
+                                    pl.getRotation(),
+                                    "Goblin",
+                                    new CharacterStats(
+                                            1, 1, 1, GOBLIN_BASE_SPEED, 30f, 2f
+                                    )
+                            )
+                    )
+            );
+            getBus().post(
+                    new MonsterSpawnEvent(
+                            new Goblin(
+                                    EntityType.WITCH,
+                                    pl.getPosition().add(new Vector3f(0, 3 + i, 0)),
+                                    pl.getRotation(),
+                                    "Goblin",
+                                    new CharacterStats(
+                                            1, 1, 1, GOBLIN_BASE_SPEED, 30f, 2f
+                                    )
+                            )
+                    )
+            );
+            getBus().post(
+                    new MonsterSpawnEvent(
+                            new Goblin(
+                                    EntityType.DRAGON,
                                     pl.getPosition().add(new Vector3f(0, 3 + i, 0)),
                                     pl.getRotation(),
                                     "Goblin",
@@ -59,6 +100,11 @@ public class MonsterSystem extends SystemAbs {
             } else {
                 getEntityPhysicsAdapter().moveCharacter(monster, Vector3f.ZERO);
             }
+            if (monster.getAggro() == null){
+                getSystem(AnimationSystem.class).switchAnimation(monster, AnimationType.Idle_Parado);
+            } else if (monster.getCurrentAnimation() == AnimationType.Idle_Parado) {
+                getSystem(AnimationSystem.class).switchAnimation(monster, AnimationType.Run_Correndo);
+            }
         }
     }
 
@@ -71,7 +117,7 @@ public class MonsterSystem extends SystemAbs {
     public void onSpawnEvent(MonsterSpawnEvent monsterSpawnEvent) {
         Monster monster = monsterSpawnEvent.monster();
         monsterList.add(monster);
-        getEntityFactory().build(monster, getRoot());
+        getEntityFactory().build(monster);
         monsterAudio.playSoundAt(monster, "spawn_sound");
     }
 

@@ -2,7 +2,7 @@ package me.brzeph.app.service;
 
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
-import me.brzeph.core.domain.entity.player.Player;
+import me.brzeph.domain.entity.player.Player;
 
 public class PlayerService {
     public static Vector3f calculateWalkDir(

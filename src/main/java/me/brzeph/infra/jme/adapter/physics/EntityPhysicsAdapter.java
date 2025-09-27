@@ -7,12 +7,12 @@ import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
-import me.brzeph.core.domain.entity.CharacterEntity;
+import me.brzeph.domain.entity.CharacterEntity;
 
 import java.util.List;
 
-import static me.brzeph.core.constants.EnemiesConstants.EPS;
-import static me.brzeph.core.constants.PhysicsConstants.G;
+import static me.brzeph.constants.EnemiesConstants.EPS;
+import static me.brzeph.constants.PhysicsConstants.G;
 
 public class EntityPhysicsAdapter {
 
@@ -140,7 +140,10 @@ public class EntityPhysicsAdapter {
                                             Vector3f groundNormal,    // pode ter y ≠ 0
                                             float gravityY,
                                             float slideGain) {
-        float maxClimbDeg = characterEntity.getType().blueprint().physics().slopeLimitDeg();
+        float maxClimbDeg = characterEntity.getType().blueprint().physics() == null ?
+                characterEntity.getType().getSlopLimitDeg() :
+                characterEntity.getType().blueprint().physics().slopeLimitDeg();
+
         float baseSpeed = characterEntity.getStats().getSpeed();
 
         // Sem input: apenas escorrega se for íngreme

@@ -3,8 +3,8 @@ package me.brzeph.infra.appstate;
 import com.jme3.app.Application;
 import com.jme3.app.state.BaseAppState;
 import me.brzeph.bootstrap.ServiceLocator;
-import me.brzeph.infra.events.EventBus;
-import me.brzeph.infra.events.NavigateToEvent;
+import me.brzeph.events.EventBus;
+import me.brzeph.events.NavigateToEvent;
 import me.brzeph.infra.persistence.AssetRepositoryImpl;
 
 public class LoadingState extends BaseAppState {

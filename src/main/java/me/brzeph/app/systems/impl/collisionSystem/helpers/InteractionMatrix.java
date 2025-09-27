@@ -6,8 +6,8 @@ import com.jme3.bullet.control.GhostControl;
 import me.brzeph.app.systems.impl.collisionSystem.events.ItemProximityEnter;
 import me.brzeph.app.systems.impl.collisionSystem.events.ItemProximityExit;
 import me.brzeph.bootstrap.ServiceLocator;
-import me.brzeph.core.domain.entity.GameEntity;
-import me.brzeph.infra.events.EventBus;
+import me.brzeph.domain.entity.GameEntity;
+import me.brzeph.events.EventBus;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,8 +36,19 @@ public final class InteractionMatrix {
 //                .triggerEnter((spell, entity) -> bus.post(new SpellHit(spell, entity)));
 
         on(CollLayers.PLAYER, CollLayers.MONSTER)
-                .contactStart((p, m, ev) -> { })
-                .contactEnd((p, m) -> { });
+                .triggerEnter((p, m) -> {
+                    System.out.println("Collision!!!");
+                })
+                .triggerExit((p, m) -> {
+                    System.out.println("Collision!!!");
+                })
+                .contactStart((p, m, ev) -> {
+                    System.out.println("Collision!!!");
+                })
+                .contactEnd((p, m) -> {
+                    System.out.println("Collision!!!");
+                })
+        ;
     }
 
     public RuleBuilder on(int ga, int gb){

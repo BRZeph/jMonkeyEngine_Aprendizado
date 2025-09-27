@@ -1,9 +1,9 @@
 package me.brzeph.app.systems.impl.collisionSystem.handlers;
 
-import me.brzeph.core.domain.entity.item.DroppedItem;
-import me.brzeph.core.domain.entity.player.Player;
+import me.brzeph.domain.entity.item.DroppedItem;
+import me.brzeph.domain.entity.player.Player;
 import me.brzeph.app.systems.impl.InventorySystem;
-import me.brzeph.core.domain.gui.impl.inventory.InventorySystemInt;
+import me.brzeph.domain.gui.impl.inventory.InventorySystemInt;
 
 public class ItemProximityService {
 

@@ -3,27 +3,33 @@ package me.brzeph.app.systems.impl;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
+import me.brzeph.app.service.InputService;
 import me.brzeph.app.systems.SystemAbs;
-import me.brzeph.core.domain.entity.CharacterStats;
-import me.brzeph.core.domain.entity.EntityType;
-import me.brzeph.core.domain.entity.item.ItemInstance;
-import me.brzeph.core.domain.entity.player.Player;
+import me.brzeph.app.systems.impl.animationSystem.AnimationSystem;
+import me.brzeph.app.systems.impl.animationSystem.AnimationType;
+import me.brzeph.domain.entity.CharacterStats;
+import me.brzeph.domain.entity.EntityType;
+import me.brzeph.domain.entity.item.ItemInstance;
+import me.brzeph.domain.entity.player.Player;
 import me.brzeph.app.service.PlayerService;
-import me.brzeph.infra.events.entities.player.PlayerJumpEvent;
-import me.brzeph.infra.events.entities.player.PlayerRunEvent;
-import me.brzeph.infra.events.entities.player.PlayerWalkEvent;
+import me.brzeph.events.entities.player.PlayerJumpEvent;
+import me.brzeph.events.entities.player.PlayerRunEvent;
+import me.brzeph.events.entities.player.PlayerWalkEvent;
 import me.brzeph.infra.jme.adapter.audio.PlayerAudioAdapter;
 import me.brzeph.infra.repository.GameEntityRepository;
 
-import static me.brzeph.core.constants.GUIConstants.PlayerConstants.PLAYER_INVENTORY;
-import static me.brzeph.core.constants.ItemConstants.*;
-import static me.brzeph.core.constants.PlayerConstants.PLAYER_WALK_SPEED;
-import static me.brzeph.core.constants.PlayerConstants.PLAYER_RUN_SPEED;
+import java.util.List;
+
+import static me.brzeph.constants.GUIConstants.PlayerConstants.PLAYER_INVENTORY;
+import static me.brzeph.constants.ItemConstants.*;
+import static me.brzeph.constants.PlayerConstants.PLAYER_WALK_SPEED;
+import static me.brzeph.constants.PlayerConstants.PLAYER_RUN_SPEED;
 
 public class PlayerSystem extends SystemAbs {
     private final PlayerAudioAdapter playerAudio;
     private final GUISystem defaultGUISystem;
     private final InventorySystem inventorySystem;
+    private final AnimationSystem animationSystem;
     private Player player;
     private Vector3f walkDir = new Vector3f();
     private boolean movingForward = false;   // PROBABLY SHOULD REFACTOR THIS INSIDE THE PLAYER.CLASS
@@ -35,17 +41,19 @@ public class PlayerSystem extends SystemAbs {
     private Camera cam;
 
     public PlayerSystem() {
-        defaultGUISystem = (GUISystem) getSystem(GUISystem.class);
+        defaultGUISystem = getSystem(GUISystem.class);
         playerAudio = new PlayerAudioAdapter(getAssetManager());
-        inventorySystem = (InventorySystem) getSystem(InventorySystem.class);
+        inventorySystem = getSystem(InventorySystem.class);
+        animationSystem = getSystem(AnimationSystem.class);
         if (inventorySystem == null){
             throw new RuntimeException("No inventory system found");
         }
-        spawnPlayer();
     }
 
     public void initialize() {
-        giveStarterItems(player);
+        spawnPlayer();
+        giveStarterItems();
+        animationSystem.switchAnimation(player, AnimationType.Idle_Parado);
     }
 
     public void update(float tpf) {
@@ -61,6 +69,7 @@ public class PlayerSystem extends SystemAbs {
                 movingForward, movingBackward,
                 movingLeft, movingRight
         );
+
         getEntityPhysicsAdapter().moveCharacter(player, walkDir); // sempre; será ZERO se sem input
     }
 
@@ -81,6 +90,22 @@ public class PlayerSystem extends SystemAbs {
             case Letter_D:
                 movingRight = state;
                 break;
+        }
+
+        boolean walking = getSystem(InputSystem.class).beingHeldDown(List.of(
+                InputService.InputAction.Letter_W,
+                InputService.InputAction.Letter_A,
+                InputService.InputAction.Letter_S,
+                InputService.InputAction.Letter_D
+        ));
+
+        if (walking) {
+            if (player.getCurrentAnimation() != AnimationType.Idle_Parado){
+                return;
+            }
+            animationSystem.switchAnimation(player, AnimationType.Walk_Andando);
+        } else {
+            animationSystem.switchAnimation(player, AnimationType.Idle_Parado);
         }
     }
 
@@ -111,10 +136,10 @@ public class PlayerSystem extends SystemAbs {
                         1, 1, 1, PLAYER_WALK_SPEED, 30f, 2f
                 )
         );
-        getEntityFactory().build(player, getRoot());
+        getEntityFactory().build(player);
     }
 
-    public void giveStarterItems(Player player) {
+    public void giveStarterItems() {
         inventorySystem.addItem(player, new ItemInstance(COIN_DEF, 20), false);
         inventorySystem.addItem(player, new ItemInstance(MOCK_ITEM_DEF_HELMET, 1), false);
         inventorySystem.addItem(player, new ItemInstance(MOCK_ITEM_DEF_HELMET, 1), false);
@@ -131,9 +156,5 @@ public class PlayerSystem extends SystemAbs {
 
     public void setCam(Camera cam) {
         this.cam = cam;
-    }
-
-    public InventorySystem getInventorySystem() {
-        return inventorySystem;
     }
 }

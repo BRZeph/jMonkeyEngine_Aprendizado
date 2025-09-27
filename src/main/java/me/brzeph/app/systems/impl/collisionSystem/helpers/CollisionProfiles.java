@@ -1,6 +1,6 @@
 package me.brzeph.app.systems.impl.collisionSystem.helpers;
 
-import me.brzeph.core.domain.entity.GameEntity;
+import me.brzeph.domain.entity.GameEntity;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 

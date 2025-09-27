@@ -2,7 +2,7 @@ package me.brzeph.bootstrap;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.BulletAppState;
-import me.brzeph.infra.events.EventBus;
+import me.brzeph.events.EventBus;
 import me.brzeph.infra.appstate.*;
 import me.brzeph.infra.persistence.AssetRepositoryImpl;
 import me.brzeph.infra.persistence.SaveGameRepositoryJson;
