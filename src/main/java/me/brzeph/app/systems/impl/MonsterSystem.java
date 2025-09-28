@@ -91,7 +91,7 @@ public class MonsterSystem extends SystemAbs {
 
     public void update(float tpf) {
         if (monsterList.isEmpty()) {
-            initMonster();
+//            initMonster();
         }
         for (Monster monster : monsterList) {
             Vector3f vel = monster.update(getRoot(), tpf); // pode ser null

@@ -16,6 +16,7 @@ public final class ItemDefinition {
     private final EquipSlot category;
     private final ItemRarity rarity;
     private final StackSpec stack;         // null => não empilhável (maxStack=1)
+    private final EquipSpec equipSpec;         // null => não empilhável (maxStack=1)
     private final DropHint dropHint;       // opcional
     /*
         When creating usable items, create UseSpec, example:
@@ -43,6 +44,7 @@ public final class ItemDefinition {
         this.stack = b.stack;
         this.dropHint = b.dropHint;
         this.iconPath = b.iconPath;
+        this.equipSpec = b.equipSpec;
     }
 
     public Color getRarityColor(){
@@ -54,12 +56,16 @@ public final class ItemDefinition {
     public String name() { return name; }
     public EquipSlot equipSlot() { return category; }
     public Optional<StackSpec> stack() { return Optional.ofNullable(stack); }
+    public Optional<EquipSpec> equipSpec() { return Optional.ofNullable(equipSpec); }
     public Optional<ItemCategory.DropHint> dropHint() { return Optional.ofNullable(dropHint); }
 
     public boolean isStackable() { return stack != null && stack.maxStack() > 1; }
 
+    public static Builder builder(ItemDefId id, String name, EquipSlot cat, EquipSpec equipSpec, ItemCategory.ItemRarity rarity, String iconPath) {
+        return new Builder(id, name, cat, equipSpec, rarity, iconPath);
+    }
     public static Builder builder(ItemDefId id, String name, EquipSlot cat, ItemCategory.ItemRarity rarity, String iconPath) {
-        return new Builder(id, name, cat, rarity, iconPath);
+        return new Builder(id, name, cat, null, rarity, iconPath);
     }
     public static final class Builder {
         private final ItemDefId id;
@@ -68,16 +74,19 @@ public final class ItemDefinition {
         private final EquipSlot equipSlot;
         private final ItemCategory.ItemRarity rarity;
         private StackSpec stack;
+        private EquipSpec equipSpec;
         private DropHint dropHint;
 
-        private Builder(ItemDefId id, String name, EquipSlot equipSlot, ItemRarity rarity, String iconPath) {
+        private Builder(ItemDefId id, String name, EquipSlot equipSlot, EquipSpec equipSpec, ItemRarity rarity, String iconPath) {
             this.id = Objects.requireNonNull(id);
             this.name = Objects.requireNonNull(name);
             this.equipSlot = Objects.requireNonNull(equipSlot);
             this.rarity = Objects.requireNonNull(rarity);
             this.iconPath = Objects.requireNonNull(iconPath);
+            this.equipSpec = equipSpec;
         }
         public Builder stack(StackSpec s) { this.stack = s; return this; }
+        public Builder equipSpec(EquipSpec s) { this.equipSpec = s; return this; }
         public Builder dropHint(DropHint d) { this.dropHint = d; return this; }
         public ItemDefinition build() { return new ItemDefinition(this); }
     }

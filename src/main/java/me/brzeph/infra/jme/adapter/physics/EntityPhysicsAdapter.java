@@ -3,7 +3,9 @@ import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.control.BetterCharacterControl;
 import com.jme3.bullet.collision.PhysicsRayTestResult;
+import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.math.FastMath;
+import com.jme3.math.Matrix3f;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
@@ -13,12 +15,12 @@ import java.util.List;
 
 import static me.brzeph.constants.EnemiesConstants.EPS;
 import static me.brzeph.constants.PhysicsConstants.G;
+import static me.brzeph.constants.PhysicsConstants.WORLD_GRAVITY;
 
 public class EntityPhysicsAdapter {
 
-    // Constantes úteis
     private static final float PROBE_HEIGHT = 1.5f;         // de onde lançar o ray para baixo
-    private static final float SLIDE_GAIN = 0.6f;           // 0..1 quanto “escorrega” em rampas proibidas
+    private static final float SLIDE_GAIN = 0.9f;           // 0..1 quanto “escorrega” em rampas proibidas
 
     private final BulletAppState bullet;
 
@@ -26,46 +28,66 @@ public class EntityPhysicsAdapter {
         this.bullet = bullet;
     }
 
-    public void moveCharacter(CharacterEntity characterEntity, Vector3f walkDir) {
-        BetterCharacterControl bcc = (BetterCharacterControl) characterEntity.getControl();
-        if (bcc == null) return;
+    public void moveCharacter(CharacterEntity e, Vector3f wishDirWorld) {
+        RigidBodyControl rbc = (RigidBodyControl) e.getControl();
+        if (rbc == null) return;
+        if (wishDirWorld == Vector3f.ZERO){
+            rbc.setAngularFactor(Vector3f.ZERO);
+            rbc.setDamping(0.1f, 0.95f);           // muito damping angular
+            rbc.setFriction(1.5f);
+            rbc.setSleepingThresholds(0.2f, 0.2f); // deixa dormir fácil
+            return;
+        }
 
-        Spatial s = bcc.getSpatial();
-        if (s == null) return;
+        // mantenha o corpo “em pé”
+        rbc.setAngularFactor(new Vector3f(0, 1, 0)); // gira só no Y (ou ZERO p/ travar tudo)
 
-        // Direção básica no plano XZ
-        Vector3f v = (walkDir == null) ? Vector3f.ZERO : walkDir.clone();
-        v.y = 0f;
+        Vector3f wish = (wishDirWorld == null ? Vector3f.ZERO : wishDirWorld.clone());
+        wish.y = 0f;
 
-        // >>> Gravidade efetiva (prioriza a do BCC, senão a global)
-        float gY = getEffectiveGravity(bcc);
-
-        // Ground probe + regras de rampa usando a gravidade efetiva
-        GroundHit gh = probeGround(s.getWorldTranslation());
+        // projeção na rampa (se tiver sua regra de declive)
+        GroundHit gh = probeGround(rbc.getPhysicsLocation());
         if (gh != null) {
-            v = applySlopeRules(characterEntity, v, gh.normal, gY, SLIDE_GAIN);
+            wish = applySlopeRules(e, wish, gh.normal, WORLD_GRAVITY.y, SLIDE_GAIN);
         }
 
-        bcc.setWalkDirection(v);
+        // velocidade alvo no plano
+        Vector3f targetXZ = wish.normalizeLocal().multLocal(e.getStats().getSpeed());
+        Vector3f vel = rbc.getLinearVelocity();
+        vel.x = targetXZ.x;
+        vel.z = targetXZ.z;
+        rbc.setLinearVelocity(vel); // física cuida do Y
 
-        if (v.lengthSquared() > EPS) {
-            Vector3f lookDir = v.normalize();
-            bcc.setViewDirection(lookDir);
-            Quaternion rot = new Quaternion().lookAt(lookDir, Vector3f.UNIT_Y);
-            s.setLocalRotation(rot);
-            characterEntity.setRotation(rot);
+        // orientação (yaw) para onde está andando
+        if (targetXZ.lengthSquared() > 1e-6f) {
+            Quaternion yaw = lookYawFromForward(targetXZ);
+            rbc.setPhysicsRotation(yaw);
+            e.setRotation(yaw);
         }
 
-        characterEntity.setPosition(s.getWorldTranslation().clone());
+        e.setPosition(rbc.getPhysicsLocation().clone());
+    }
+
+    private static Quaternion lookYawFromForward(Vector3f fwdWorld) {
+        Vector3f f = fwdWorld.clone().setY(0).normalizeLocal();
+        Matrix3f m = new Matrix3f();
+        m.fromAxes(
+                f.cross(Vector3f.UNIT_Y).normalizeLocal(), // right
+                Vector3f.UNIT_Y,                            // up
+                f.negateLocal()                             // back
+        );
+        return new Quaternion().fromRotationMatrix(
+                m
+        );
     }
 
     public boolean jumpCharacter(CharacterEntity characterEntity) {
-        BetterCharacterControl control = (BetterCharacterControl) characterEntity.getControl();
-        if (control != null && control.isOnGround()) {
-            // Adicionado check isOnGround "redundante" para retornar boolean para o som
-            control.jump();
-            return true;
-        }
+//        BetterCharacterControl control = (BetterCharacterControl) characterEntity.getControl();
+//        if (control != null && control.isOnGround()) {
+//            control.jump();
+//            return true;
+//        }
+//        return false;
         return false;
     }
 
@@ -81,31 +103,6 @@ public class EntityPhysicsAdapter {
         Vector3f point;
         Vector3f normal;
         float    fraction;
-    }
-
-    private final Vector3f scratchG = new Vector3f(); // reuse por frame
-
-    private float getEffectiveGravity(BetterCharacterControl bcc) {
-        // 1) gravidade do BCC (se você a configurou por-entidade)
-        Vector3f g = tryGetBccGravity(bcc);
-        if (g != null && g.lengthSquared() > 0f) return Math.abs(g.y);
-
-        // 2) gravidade global do mundo
-        bullet.getPhysicsSpace().getGravity(scratchG);
-        if (scratchG.lengthSquared() > 0f) return Math.abs(scratchG.y);
-
-        // 3) fallback
-        return Math.abs(G);
-    }
-
-    private Vector3f tryGetBccGravity(BetterCharacterControl bcc) {
-        try {
-            Vector3f vet = new Vector3f();
-            bcc.getGravity(vet);
-            return vet;
-        } catch (Throwable t) {
-            return null;
-        }
     }
 
     // Ray para baixo a partir do “peito” do personagem
@@ -206,6 +203,7 @@ public class EntityPhysicsAdapter {
         vTangentXZ.y = 0f; // GARANTIA: nunca devolva Y ≠ 0 ao BCC
         return vTangentXZ;
     }
+
     private static Vector3f slideOnTooSteepXZ(Vector3f baseTangentXZ,
                                               Vector3f groundNormal,
                                               float gravityY,

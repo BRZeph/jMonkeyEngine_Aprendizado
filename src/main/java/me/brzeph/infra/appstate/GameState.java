@@ -27,6 +27,9 @@ import me.brzeph.app.factory.WorldFactory;
 import me.brzeph.events.EventBus;
 import me.brzeph.infra.jme.adapter.physics.EntityPhysicsAdapter;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import static me.brzeph.constants.PhysicsConstants.WORLD_GRAVITY;
 
 public class GameState extends BaseAppState {
@@ -180,6 +183,14 @@ public class GameState extends BaseAppState {
         // manda o Minie desenhar o debug nesse viewport
         bullet.setDebugViewPorts(physDbg);
 
-        bullet.setDebugEnabled(false);
+        bullet.setDebugEnabled(true);
+
+
+// glTF loader (aviso de interpolação)
+        Logger.getLogger("com.jme3.scene.plugins.gltf").setLevel(Level.SEVERE);
+// Bullet/Minie (criação de corpos)
+        Logger.getLogger("com.jme3.bullet").setLevel(Level.WARNING);
+// ou mais específico:
+        Logger.getLogger("com.jme3.bullet.objects.PhysicsRigidBody").setLevel(Level.WARNING);
     }
 }

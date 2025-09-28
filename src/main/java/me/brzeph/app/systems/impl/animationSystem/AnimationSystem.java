@@ -6,7 +6,7 @@ import com.jme3.scene.Node;
 import me.brzeph.app.systems.SystemAbs;
 import me.brzeph.domain.entity.CharacterEntity;
 import me.brzeph.domain.entity.EntityType;
-import me.brzeph.domain.entity.GameEntity;
+import me.brzeph.domain.entity.player.Player;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,7 +30,7 @@ public class AnimationSystem extends SystemAbs {
             if (type.blueprint().anim() == null){
                 animations.put(type, new ArrayList<>());
             } else {
-                animations.put(type, findAnimClip(type.blueprint().anim().getAnimationPath()));
+                animations.put(type, findAnimClip(type.blueprint().anim().animationPath()));
 
                 assert currentAnimComposerModel != null;
                 composers.put(type, currentAnimComposerModel);

@@ -1,18 +1,9 @@
 package me.brzeph.domain.entity;
 
-import com.jme3.asset.AssetManager;
-import com.jme3.bullet.BulletAppState;
-import com.jme3.bullet.control.BetterCharacterControl;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
-import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
 import me.brzeph.app.systems.impl.animationSystem.AnimationStats;
 import me.brzeph.app.systems.impl.animationSystem.AnimationType;
-import me.brzeph.bootstrap.ServiceLocator;
-import me.brzeph.domain.entity.specs.PhysicsSpec;
-import me.brzeph.domain.entity.specs.VisualKind;
-import me.brzeph.domain.entity.specs.VisualSpec;
 
 public abstract class CharacterEntity extends GameEntity {
     protected String name;
@@ -69,7 +60,7 @@ public abstract class CharacterEntity extends GameEntity {
         public static final float runSpeed  = 6.0f;
         public static final float accel     = 20f;
         public static final float turnRate  = 540f; // graus/s
-        public static final float jumpHeight = 1.2f; // metros (intenção de gameplay)
+        public static final float jumpHeight = 1.2f; // metros
         public static final float weight    = 80f;
 
         public float getWalkSpeed() {

@@ -1,7 +1,7 @@
 package me.brzeph.domain.gui.core.widgets;
 
 import me.brzeph.domain.entity.item.ItemCategory;
-import me.brzeph.domain.entity.item.ItemInstance;
+import me.brzeph.domain.entity.item.ItemStack;
 import me.brzeph.domain.gui.core.others.Color;
 import me.brzeph.domain.gui.core.others.Rect;
 import me.brzeph.domain.gui.core.others.Size;
@@ -14,7 +14,7 @@ import static me.brzeph.domain.gui.core.others.Rect.strokeRect;
 public final class UIInventorySlot extends Widget<UIInventorySlot> {
 
     private final UIItemIcon icon = new UIItemIcon();
-    private ItemInstance item;
+    private ItemStack item;
     private ItemCategory.EquipSlot accepts = ItemCategory.EquipSlot.COMMON_SLOT;
     private int index = -1;
     private boolean highlight, dragOver;
@@ -46,13 +46,13 @@ public final class UIInventorySlot extends Widget<UIInventorySlot> {
     }
 
     // item API
-    public UIInventorySlot setItem(ItemInstance it){
+    public UIInventorySlot setItem(ItemStack it){
         this.item = it;
         icon.item(it);
         return this;
     }
 
-    public ItemInstance getItem(){
+    public ItemStack getItem(){
         return item;
     }
 
@@ -64,7 +64,7 @@ public final class UIInventorySlot extends Widget<UIInventorySlot> {
         return accepts;
     }
 
-    public boolean canAccept(ItemInstance it){
+    public boolean canAccept(ItemStack it){
         if (it == null) return true;
         return accepts == it.definition().equipSlot() || accepts == ItemCategory.EquipSlot.COMMON_SLOT;
     }

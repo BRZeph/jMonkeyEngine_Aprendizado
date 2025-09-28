@@ -1,7 +1,6 @@
 package me.brzeph.domain.gui.core.widgets;
 
-import me.brzeph.domain.entity.item.ItemCategory;
-import me.brzeph.domain.entity.item.ItemInstance;
+import me.brzeph.domain.entity.item.ItemStack;
 import me.brzeph.domain.gui.core.others.Color;
 import me.brzeph.domain.gui.core.others.Rect;
 import me.brzeph.domain.gui.core.others.Size;
@@ -10,17 +9,17 @@ import me.brzeph.domain.gui.core.others.UIFont;
 import static me.brzeph.domain.gui.core.others.Rect.*;
 
 public final class UIItemIcon extends Widget<UIItemIcon> {
-    private ItemInstance item;
+    private ItemStack item;
     private Object icon;             // cache de imagem
     private float padding = 4f;
 
-    public UIItemIcon item(ItemInstance it){
+    public UIItemIcon item(ItemStack it){
         this.item = it;
         this.icon = null;
         return this;
     }
 
-    public ItemInstance item(){ return item; }
+    public ItemStack item(){ return item; }
 
     private void ensureIcon(){
         String path = (item != null && item.definition() != null) ? item.definition().getIconPath() : null;

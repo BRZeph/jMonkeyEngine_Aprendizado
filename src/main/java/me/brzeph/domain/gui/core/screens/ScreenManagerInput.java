@@ -1,13 +1,11 @@
 package me.brzeph.domain.gui.core.screens;
 
-import me.brzeph.domain.entity.item.ItemInstance;
-import me.brzeph.domain.entity.player.Player;
+import me.brzeph.domain.entity.item.ItemStack;
 import me.brzeph.domain.gui.core.events.*;
 import me.brzeph.domain.gui.core.widgets.UIButton;
 import me.brzeph.domain.gui.core.widgets.UIInventorySlot;
 import me.brzeph.domain.gui.core.widgets.Widget;
 import me.brzeph.events.EventBus;
-import me.brzeph.infra.repository.GameEntityRepository;
 
 import java.util.Optional;
 
@@ -38,7 +36,7 @@ public final class ScreenManagerInput {
     private float prevX, prevY;
     private int   pressedButton = 0;
 
-    private ItemInstance holdingItem = null;
+    private ItemStack holdingItem = null;
 
     public ScreenManagerInput(ScreenManager mgr, EventBus bus){
         this.mgr = mgr; this.bus = bus;
@@ -60,7 +58,7 @@ public final class ScreenManagerInput {
 
             if (targetScreen != null && targetWidget != null){
                 if (targetWidget instanceof UIInventorySlot s){
-                    ItemInstance item = s.getItem();
+                    ItemStack item = s.getItem();
                     bus.post(new UIScreenClickEvent(targetScreen.id(), s, mouseX, mouseY, button, item));
                 } else if (targetWidget instanceof UIButton b){
                     bus.post(new UIScreenButtonClickEvent(targetScreen.id(), targetWidget.id(), mouseX, mouseY, button, b.id()));

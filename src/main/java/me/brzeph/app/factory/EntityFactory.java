@@ -1,9 +1,13 @@
 package me.brzeph.app.factory;
 
 import com.jme3.anim.AnimComposer;
+import com.jme3.anim.Armature;
+import com.jme3.anim.Joint;
+import com.jme3.anim.SkinningControl;
 import com.jme3.asset.AssetManager;
 import com.jme3.asset.MaterialKey;
 import com.jme3.bounding.BoundingBox;
+import com.jme3.bounding.BoundingSphere;
 import com.jme3.bounding.BoundingVolume;
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.shapes.*;
@@ -13,9 +17,11 @@ import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.*;
+import com.jme3.scene.debug.custom.ArmatureDebugAppState;
 import me.brzeph.app.systems.SystemAbs;
 import me.brzeph.app.systems.impl.animationSystem.AnimationSpec;
 import me.brzeph.app.systems.impl.animationSystem.AnimationSystem;
+import me.brzeph.bootstrap.ServiceLocator;
 import me.brzeph.domain.entity.CharacterEntity;
 import me.brzeph.domain.entity.EntityBlueprint;
 import me.brzeph.domain.entity.GameEntity;
@@ -44,7 +50,7 @@ public final class EntityFactory extends SystemAbs {
         this.physics = Objects.requireNonNull(physics);
     }
 
-    public static void printChildrenDeep(Node root){
+    public void printChildrenDeep(Node root){
         if (root == null) {
             System.out.println("<null>");
             return;
@@ -52,6 +58,12 @@ public final class EntityFactory extends SystemAbs {
         root.depthFirstTraversal(s -> {
             System.out.println(s.getName() != null ? s.getName() : s.getClass().getSimpleName());
         });
+
+        SkinningControl skinning   = findControl(root, SkinningControl.class);
+        Armature armature = skinning.getArmature();
+        for (int i = 0; i < armature.getJointCount(); i++) {
+            System.out.println(i + " -> " + armature.getJoint(i).getName());
+        }
     }
 
     public void build(GameEntity e) {
@@ -66,22 +78,22 @@ public final class EntityFactory extends SystemAbs {
         } else {
             initWithoutAnimation(e, getRoot(), v, p);
         }
+
+        if (e instanceof Player p2){
+            printChildrenDeep(p2.getCharacterNode());
+        }
     }
 
     private void initWithAnimation(CharacterEntity e) {
         Node model = getSystem(AnimationSystem.class).getNode(e.getType());
-        AnimComposer ac = findControl(model, AnimComposer.class); // percorre filhos
+        AnimComposer ac = findControl(model, AnimComposer.class);
         if (ac == null) {
             dumpScene(model, "");
             throw new IllegalStateException("AnimComposer ausente no clone de " + e.getType());
         }
         e.setAnimComposer(ac);
 
-        Node withBCC = initBCC(e, model);
-
-        initPivot(withBCC, "RightArm", e.getId());
-        initPivot(withBCC, "LeftArm", e.getId());
-        initSimple(withBCC, "Head", e.getId());
+        Node withBCC = initRbcCompoundFromAllParts(e, model);
 
         getRoot().attachChild(withBCC);
         e.setCharacterNode(withBCC);
@@ -100,72 +112,45 @@ public final class EntityFactory extends SystemAbs {
         });
     }
 
-    private Node initBCC(CharacterEntity e, Node model) {
-        BoundingVolume v = model.getWorldBound();
-        BoundingBox vb = (BoundingBox) v;
+    private Node initRbcCompoundFromAllParts(CharacterEntity e, Node model) {
+        float mass = e.getMovementStats().getWeight();
+        model.updateGeometricState();
 
-        float height = 2 * vb.getYExtent();
-        float width = 2 * vb.getXExtent();
-        float depth = 2 * vb.getZExtent();
-        float radius = Math.max(width, depth) * 0.5f * 0.5f; // 0.5 para ir de diâmetro→raio, *0.5 para “apertar” um pouco
-        float g = Math.abs(WORLD_GRAVITY.y);
-        float H = e.getMovementStats().getJumpHeight();
-        float v0 = (float) Math.sqrt(2f * g * Math.max(0f, H));
-        float impulseY = e.getMovementStats().getWeight() * v0;
+        CompoundCollisionShape compound = new CompoundCollisionShape();
+        int[] count = {0};
 
-        model.setName(e.getId());
-        model.setLocalTranslation(e.getSpawnPoint().minLocal(new Vector3f(0, height, 0)));
-        model.setLocalRotation(e.getSpawnRotation());
-        model.setLocalScale(e.getSpawnScale());
+        model.depthFirstTraversal(new SceneGraphVisitorAdapter() {
+            @Override public void visit(Geometry g) {
+                String name = g.getName();
+                if (name == null || !name.endsWith("_geo_0")) return;
+                if (g.getCullHint() == Spatial.CullHint.Always) return;
 
-        if (2 * radius > height){
-            height = 2 * height;
-            System.out.println("height: " + height);
-            System.out.println("radius: " + radius);
-            System.out.println("RADIUS >> HEIGHT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                g.updateModelBound();
+                BoundingVolume bv = g.getModelBound();
+                if (!(bv instanceof BoundingBox)) return;
+                addBoxFor(model, compound, (BoundingBox) bv);
+                count[0]++;
+            }
+        });
+
+        if (count[0] == 0) {
+            throw new IllegalStateException("Nenhuma Geometry *_geo_0 encontrada para montar o compound.");
         }
 
-        BetterCharacterControl bcc = new BetterCharacterControl(radius, height, e.getMovementStats().getWeight());
-        bcc.setJumpForce(new Vector3f(0, impulseY, 0));
-        model.addControl(bcc);
-        getPhysicsSpace().add(bcc);
+        RigidBodyControl rbc = new RigidBodyControl(compound, mass);
+        model.addControl(rbc);
+        getPhysicsSpace().add(rbc);
 
         return model;
     }
 
-    private void initPivot(Node model, String base, String characterId) {
-        Node pivot = (Node) findChildDeep(model,  base + "Pivot");
-        Geometry geo = findGeometry(findChildDeep(model, base));
-        if (pivot == null || geo == null) {
-            System.out.println("[WARN]: " + "Could not find Pivot or Geometry for " + base + ", " + characterId);
-            return;
-//            throw new IllegalStateException("Could not find Pivot or Geometry for " + base + ", " + characterId);
-        }
-        BoundingBox bb = (BoundingBox) geo.getWorldBound();
-        Vector3f half = bb.getExtent(new Vector3f());
-        Vector3f localOffset = new Vector3f(0f, -half.y, 0f);
+    private static void addBoxFor(Node model, CompoundCollisionShape compound, BoundingBox bbWorld) {
+        Vector3f getHalf = new Vector3f();
+        Vector3f half = bbWorld.getExtent(getHalf);
 
-        CompoundCollisionShape compound = new CompoundCollisionShape();
-        compound.addChildShape(new BoxCollisionShape(half), localOffset);
-
-        GhostControl gc = new GhostControl(compound);
-        pivot.addControl(gc);
-        getPhysicsSpace().add(gc);
-
-        pivot.setUserData(CHARACTER_FATHER_NODE_ID, characterId);
-        pivot.setUserData(CHARACTER_ME_NODE_ID, characterId + "Pivot");
-    }
-
-    private void initSimple(Node model, String base, String characterId){
-        Spatial spat = findChildDeep(model, base);
-        Geometry geo = findGeometry(spat);
-        if (geo != null) {
-            GhostControl gc = new GhostControl(boxFromBound(geo));
-            spat.addControl(gc);
-            getPhysicsSpace().add(gc);
-            spat.setUserData(CHARACTER_FATHER_NODE_ID, characterId);
-            spat.setUserData(CHARACTER_ME_NODE_ID, characterId + base);
-        }
+        Vector3f centerLocal = model.worldToLocal(bbWorld.getCenter(), new Vector3f());
+        BoxCollisionShape box = new BoxCollisionShape(half);
+        compound.addChildShape(box, centerLocal);
     }
 
     private static Geometry findGeometry(Spatial s) {
@@ -192,6 +177,20 @@ public final class EntityFactory extends SystemAbs {
             for (Spatial ch : n.getChildren()) {
                 Spatial f = findChildDeep(ch, name);
                 if (f != null) return f;
+            }
+        }
+        return null;
+    }
+
+    private static Joint findBoneDeep(Node n, String name) {
+        if (n == null) return null;
+        SkinningControl skinning   = findControl(n, SkinningControl.class);
+        if (skinning == null) return null;
+        Armature armature = skinning.getArmature();
+        for (int i = 0; i < armature.getJointCount(); i++) {
+            System.out.println(i + " -> " + armature.getJoint(i).getName());
+            if (armature.getJoint(i).getName().equals(name)){
+                return armature.getJoint(i);
             }
         }
         return null;

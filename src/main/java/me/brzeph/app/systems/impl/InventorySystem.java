@@ -6,7 +6,7 @@ import me.brzeph.domain.entity.CharacterEntity;
 import me.brzeph.domain.entity.item.DroppedItem;
 import me.brzeph.domain.entity.item.ItemCategory;
 import me.brzeph.domain.entity.item.ItemDefinition;
-import me.brzeph.domain.entity.item.ItemInstance;
+import me.brzeph.domain.entity.item.ItemStack;
 import me.brzeph.domain.entity.player.Player;
 import me.brzeph.domain.gui.impl.inventory.InventorySystemInt;
 import me.brzeph.domain.gui.impl.inventory.PlayerInventory;
@@ -21,7 +21,7 @@ public final class InventorySystem extends SystemAbs implements InventorySystemI
     }
 
     @Override
-    public AddResult addItem(CharacterEntity entity, ItemInstance item, boolean autoEquip) {
+    public AddResult addItem(CharacterEntity entity, ItemStack item, boolean autoEquip) {
         if (item == null) return new AddResult(0, null);
 
         if(!(entity instanceof Player player)) {
@@ -60,7 +60,7 @@ public final class InventorySystem extends SystemAbs implements InventorySystemI
         }
 
         int totalAdded = Math.min(qty, addedCommon);
-        ItemInstance remainder = (totalAdded == qty) ? null : copyWithQuantity(item, qty - totalAdded);
+        ItemStack remainder = (totalAdded == qty) ? null : copyWithQuantity(item, qty - totalAdded);
 
         return new AddResult(totalAdded, remainder);
     }
@@ -86,7 +86,7 @@ public final class InventorySystem extends SystemAbs implements InventorySystemI
 
     // ----------------- Regras internas -----------------
 
-    private int tryAddToPotionSlots(PlayerInventory inv, ItemInstance item){
+    private int tryAddToPotionSlots(PlayerInventory inv, ItemStack item){
         int toAdd = qty(item);
         int added = 0;
 
@@ -96,7 +96,7 @@ public final class InventorySystem extends SystemAbs implements InventorySystemI
 
         // 3.1 empilhar em slots com a mesma poção
         for (var s : POTIONS){
-            ItemInstance cur = inv.getEquip(s);
+            ItemStack cur = inv.getEquip(s);
             if (cur != null && sameItem(cur, item) && isStackable(item)) {
                 int room = maxStack(item) - qty(cur);
                 if (room > 0) {
@@ -109,9 +109,9 @@ public final class InventorySystem extends SystemAbs implements InventorySystemI
         }
         // 3.2 colocar em slot vazio
         for (var s : POTIONS){
-            ItemInstance cur = inv.getEquip(s);
+            ItemStack cur = inv.getEquip(s);
             if (cur == null) {
-                ItemInstance placed = copyWithQuantity(item, Math.min(toAdd, maxStack(item)));
+                ItemStack placed = copyWithQuantity(item, Math.min(toAdd, maxStack(item)));
                 inv.setEquip(s, placed);
                 added += qty(placed);
                 toAdd -= qty(placed);
@@ -123,11 +123,11 @@ public final class InventorySystem extends SystemAbs implements InventorySystemI
     }
 
     /** Empilha em slots comuns que tenham o mesmo item. */
-    private int tryStackInCommon(PlayerInventory inv, ItemInstance item){
+    private int tryStackInCommon(PlayerInventory inv, ItemStack item){
         if (!isStackable(item)) return 0;
         int toAdd = qty(item), added = 0;
         for (int i = 0; i < inv.commonCapacity(); i++){
-            ItemInstance cur = inv.getCommon(i);
+            ItemStack cur = inv.getCommon(i);
             if (cur != null && sameItem(cur, item)) {
                 int room = maxStack(item) - qty(cur);
                 if (room > 0) {
@@ -142,7 +142,7 @@ public final class InventorySystem extends SystemAbs implements InventorySystemI
     }
 
     /** Coloca em espaços vazios do comum, criando stacks até o limite. */
-    private int tryPlaceInEmptyCommon(PlayerInventory inv, ItemInstance item){
+    private int tryPlaceInEmptyCommon(PlayerInventory inv, ItemStack item){
         int toAdd = qty(item), added = 0, ms = Math.max(1, maxStack(item));
         for (int i = 0; i < inv.commonCapacity(); i++){
             if (inv.getCommon(i) == null){
@@ -157,28 +157,28 @@ public final class InventorySystem extends SystemAbs implements InventorySystemI
 
     // ----------------- Helpers de item/stack -----------------
 
-    private static boolean sameItem(ItemInstance a, ItemInstance b){
+    private static boolean sameItem(ItemStack a, ItemStack b){
         return a.definition().id().equals(b.definition().id());
     }
-    private static boolean isStackable(ItemInstance ii){
+    private static boolean isStackable(ItemStack ii){
         return ii.definition().isStackable();
     }
-    private static int maxStack(ItemInstance ii){
+    private static int maxStack(ItemStack ii){
         return ii.maxStack();
     }
-    private static int qty(ItemInstance ii){
+    private static int qty(ItemStack ii){
         return ii.quantity();
     }
-    private static void setQty(ItemInstance ii, int q){
+    private static void setQty(ItemStack ii, int q){
         ii.setQuantity(q);
     }
-    private static ItemInstance copyWithQuantity(ItemInstance src, int q){
-        ItemInstance c = clone(src);
+    private static ItemStack copyWithQuantity(ItemStack src, int q){
+        ItemStack c = clone(src);
         setQty(c, q);
         return c;
     }
-    private static ItemInstance clone(ItemInstance src){
-        try { return (ItemInstance) src.getClass().getMethod("clone").invoke(src); }
+    private static ItemStack clone(ItemStack src){
+        try { return (ItemStack) src.getClass().getMethod("clone").invoke(src); }
         catch (Exception e){ return src; } // fallback (cuidado: aliasing)
     }
 

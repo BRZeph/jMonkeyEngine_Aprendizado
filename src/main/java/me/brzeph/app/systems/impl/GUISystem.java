@@ -5,7 +5,7 @@ import com.jme3.input.event.MouseButtonEvent;
 import com.jme3.input.event.MouseMotionEvent;
 import me.brzeph.app.service.InputService;
 import me.brzeph.app.systems.SystemAbs;
-import me.brzeph.domain.entity.item.ItemInstance;
+import me.brzeph.domain.entity.item.ItemStack;
 import me.brzeph.domain.entity.player.Player;
 import me.brzeph.domain.gui.core.events.UIDragEndEvent;
 import me.brzeph.domain.gui.core.events.UIDragMoveEvent;
@@ -74,7 +74,7 @@ public class GUISystem extends SystemAbs {
     private final Map<String, ScreenParams> stickyParams = new HashMap<>();
     private RawInputListener raw;
 
-    private ItemInstance holdingItem = null;
+    private ItemStack holdingItem = null;
     private UIInventorySlot holdingItemWidget = null;
     private float holdingItemXPos = 0f;
     private float holdingItemYPos = 0f;
@@ -270,7 +270,7 @@ public class GUISystem extends SystemAbs {
                     if (w instanceof UIInventorySlot slot){
                         Player player = ((PlayerSystem)getSystem(PlayerSystem.class)).getPlayer();
                         if (!slot.canAccept(holdingItem)) break;
-                        ItemInstance item = slot.getItem();
+                        ItemStack item = slot.getItem();
                         if(player.getInventory().swapItems(holdingItemWidget, slot)) {
                             holdingItemWidget.setItem(item);
                             slot.setItem(holdingItem);

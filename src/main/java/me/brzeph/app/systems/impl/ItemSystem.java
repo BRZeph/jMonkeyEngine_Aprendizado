@@ -6,7 +6,7 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import me.brzeph.app.systems.SystemAbs;
 import me.brzeph.domain.entity.item.DroppedItem;
-import me.brzeph.domain.entity.item.ItemInstance;
+import me.brzeph.domain.entity.item.ItemStack;
 import me.brzeph.app.factory.ItemFactory;
 import me.brzeph.events.items.DropItemEvent;
 import me.brzeph.infra.repository.GameEntityRepository;
@@ -31,7 +31,7 @@ public class ItemSystem extends SystemAbs {
 
     public void initialize(){
         DroppedItem drop = ItemFactory.createDropFrom(
-                new ItemInstance(COIN_DEF, 25),
+                new ItemStack(COIN_DEF, 25),
                 new Vector3f(10, 0, 5),
                 Quaternion.IDENTITY
         );

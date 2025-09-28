@@ -3,13 +3,13 @@ package me.brzeph.domain.entity.item;
 
 import java.util.*;
 
-public final class ItemInstance {
+public final class ItemStack {
     private final ItemId id;
     private final ItemDefinition def;
 
     private int quantity;                       // stack atual (>=1)
 
-    public ItemInstance(ItemDefinition def, int quantity) {
+    public ItemStack(ItemDefinition def, int quantity) {
         this.id = ItemId.newId();
         this.def = Objects.requireNonNull(def);
         this.quantity = Math.max(0, quantity);
@@ -39,7 +39,7 @@ public final class ItemInstance {
     public ItemId id() { return id; }
     public int quantity() { return quantity; }
 
-    public ItemInstance withQuantity(int newQty) {
+    public ItemStack withQuantity(int newQty) {
 //        if (newQty <= 0) {
 //            throw new IllegalArgumentException("quantity must be >= 1; para remover use inv.set(index, null)");
 //        }

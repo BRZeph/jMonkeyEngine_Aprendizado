@@ -1,11 +1,19 @@
 package me.brzeph.domain.gui.impl.inventory;
 
+import com.jme3.anim.Armature;
+import com.jme3.anim.SkinningControl;
+import com.jme3.asset.AssetManager;
+import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
+import me.brzeph.bootstrap.ServiceLocator;
 import me.brzeph.domain.entity.item.ItemCategory;
-import me.brzeph.domain.entity.item.ItemInstance;
+import me.brzeph.domain.entity.item.ItemStack;
+import me.brzeph.domain.entity.player.Player;
 import me.brzeph.domain.gui.core.widgets.UIInventorySlot;
 
 import java.util.*;
 
+import static me.brzeph.app.systems.impl.animationSystem.AnimationService.findControl;
 import static me.brzeph.constants.ItemConstants.COIN_DEF;
 import static me.brzeph.constants.ItemConstants.CRAFTING_BAG;
 
@@ -16,25 +24,30 @@ public final class PlayerInventory implements InventoryPort {
     public static final int COLUMNS = 9;
     public static final int COMMON_CAPACITY = ROWS * COLUMNS;
 
-    private final EnumMap<ItemCategory.EquipSlot, ItemInstance> equipment =
+    private final EnumMap<ItemCategory.EquipSlot, ItemStack> equipment =
             new EnumMap<>(ItemCategory.EquipSlot.class);
 
-    private final ItemInstance[][] common = new ItemInstance[ROWS][COLUMNS];
+    private final ItemStack[][] common = new ItemStack[ROWS][COLUMNS];
 
-    private ItemInstance currency;
+    private ItemStack currency;
 
-    private final ItemInstance craftingBag; // This is just to create the slot, the items are stored inside craftingBagContents
-    private final Set<ItemInstance> craftingBagContents;
+    private final ItemStack craftingBag; // This is just to create the slot, the items are stored inside craftingBagContents
+    private final Set<ItemStack> craftingBagContents;
 
-    public PlayerInventory() {
+    private final Player player;
+
+    private Spatial equippedWeaponR = null;
+
+    public PlayerInventory(Player player) {
+        this.player = player;
         for(int r = 0; r < ROWS; r++) {
             for(int c = 0; c < COLUMNS; c++) {
                 common[r][c] = null;
             }
         }
 
-        currency = new ItemInstance(COIN_DEF, 0);
-        craftingBag = new ItemInstance(CRAFTING_BAG, 0);
+        currency = new ItemStack(COIN_DEF, 0);
+        craftingBag = new ItemStack(CRAFTING_BAG, 0);
         craftingBagContents = new HashSet<>();
 
         List<ItemCategory.EquipSlot> ignore = List.of(
@@ -50,7 +63,7 @@ public final class PlayerInventory implements InventoryPort {
     }
 
     @Override
-    public ItemInstance getEquip(ItemCategory.EquipSlot slot) {
+    public ItemStack getEquip(ItemCategory.EquipSlot slot) {
         if (equipment.containsKey(slot)) return equipment.get(slot);
         return switch (slot) {
             case CURRENCY -> currency;
@@ -66,14 +79,14 @@ public final class PlayerInventory implements InventoryPort {
     }
 
     @Override
-    public ItemInstance getCommon(int index) {
+    public ItemStack getCommon(int index) {
         int row = index/COLUMNS;
         int col = index%COLUMNS;
         return common[row][col];
     }
 
     @Override
-    public ItemInstance getCommon(int row, int col) {
+    public ItemStack getCommon(int row, int col) {
         return common[row][col];
     }
 
@@ -83,21 +96,21 @@ public final class PlayerInventory implements InventoryPort {
     }
 
     @Override
-    public ItemInstance currencyItem() {
+    public ItemStack currencyItem() {
         return currency;
     }
 
     @Override
-    public ItemInstance craftingBagSummary() {
+    public ItemStack craftingBagSummary() {
         return craftingBag;
     }
 
-    public void addToCraftingBag(ItemInstance item) {
+    public void addToCraftingBag(ItemStack item) {
         assert ItemCategory.CRAFTING_MATERIAL.contains(item.definition().equipSlot());
         if (craftingBagContents.contains(item)){
             String itemId = item.definition().id().itemId();
             String s;
-            for (ItemInstance i : craftingBagContents) {
+            for (ItemStack i : craftingBagContents) {
                 s = i.definition().id().itemId();
                 if (Objects.equals(s, itemId)){
                     i.setQuantity(i.quantity() + item.quantity());
@@ -112,24 +125,38 @@ public final class PlayerInventory implements InventoryPort {
         this.currency.addQuantity(qtd);
     }
 
-    public void setEquip(ItemCategory.EquipSlot slot, ItemInstance item) {
+    public void setEquip(ItemCategory.EquipSlot slot, ItemStack item) {
         assert equipment.containsKey(item.definition().equipSlot());
+
+        if (slot == ItemCategory.EquipSlot.MAIN_HAND && item.definition().equipSpec().isPresent()){
+            if (item.definition().equipSpec().get().glbPath() != null){
+                SkinningControl skinning   = findControl(player.getCharacterNode(), SkinningControl.class);
+                Spatial weapon = ServiceLocator.get(AssetManager.class).loadModel("assets/glb/items/simple_sword.glb");
+                Node handAttach  = skinning.getAttachmentsNode("Arm.R_socket_bone");
+                handAttach.attachChild(weapon);
+                equippedWeaponR = weapon;
+            }
+        }
 
         equipment.replace(slot, item);
     }
 
-    public void setCommon(int index, ItemInstance itemInstance){
+    public void setCommon(int index, ItemStack itemStack){
         assert index < COMMON_CAPACITY;
 
         int row = index/COLUMNS;
         int col = index%COLUMNS;
-        common[row][col] = itemInstance;
+        common[row][col] = itemStack;
     }
 
-    public ItemInstance unEquip(ItemCategory.EquipSlot slot) {
+    public ItemStack unEquip(ItemCategory.EquipSlot slot) {
         assert equipment.containsKey(slot);
-        ItemInstance i = equipment.get(slot);
+        ItemStack i = equipment.get(slot);
         equipment.replace(slot, null);
+        if (slot == ItemCategory.EquipSlot.MAIN_HAND && equippedWeaponR != null){
+            equippedWeaponR.removeFromParent();
+            equippedWeaponR = null;
+        }
         return i;
     }
 
@@ -141,13 +168,13 @@ public final class PlayerInventory implements InventoryPort {
         int rowB = b/COLUMNS;
         int colB = b%COLUMNS;
 
-        ItemInstance temp = common[rowA][colA];
+        ItemStack temp = common[rowA][colA];
         common[rowA][colA] = common[rowB][colB];
         common[rowB][colB] = temp;
     }
 
     private void swapCommon(int rowA, int colA, int rowB, int colB){
-        ItemInstance temp = common[rowA][colA];
+        ItemStack temp = common[rowA][colA];
         common[rowA][colA] = common[rowB][colB];
         common[rowB][colB] = temp;
     }
@@ -169,10 +196,10 @@ public final class PlayerInventory implements InventoryPort {
 
      */
 
-    public boolean addCommon(ItemInstance itemInstance){
+    public boolean addCommon(ItemStack itemStack){
         int pos = getFirstAvailableCommonIndex();
         if (pos == -1) return false;
-        setCommon(getFirstAvailableCommonIndex(), itemInstance);
+        setCommon(getFirstAvailableCommonIndex(), itemStack);
         return true;
     }
 
@@ -215,7 +242,7 @@ public final class PlayerInventory implements InventoryPort {
             Swap EQUIPPED chestplate with NOT EQUIPPED trinket.
          */
 
-        ItemInstance aI = a.getItem();
+        ItemStack aI = a.getItem();
         ItemCategory.EquipSlot bE = b.getAccepts();
         int aP = a.getIndex();
 
@@ -228,29 +255,29 @@ public final class PlayerInventory implements InventoryPort {
         return true;
     }
 
-    public void equipItem(ItemCategory.EquipSlot s, ItemInstance i, int iPos){
-        ItemInstance removeEquipped = unEquip(s);
+    public void equipItem(ItemCategory.EquipSlot s, ItemStack i, int iPos){
+        ItemStack removeEquipped = unEquip(s);
         setEquip(s, i);
         setCommon(iPos, removeEquipped);
     }
 
-    public Set<ItemInstance> getCraftingBagContents() {
+    public Set<ItemStack> getCraftingBagContents() {
         return craftingBagContents;
     }
 
-    public ItemInstance getCraftingBag() {
+    public ItemStack getCraftingBag() {
         return craftingBag;
     }
 
-    public ItemInstance getCurrency() {
+    public ItemStack getCurrency() {
         return currency;
     }
 
-    public ItemInstance[][] getCommon() {
+    public ItemStack[][] getCommon() {
         return common;
     }
 
-    public EnumMap<ItemCategory.EquipSlot, ItemInstance> getEquipment() {
+    public EnumMap<ItemCategory.EquipSlot, ItemStack> getEquipment() {
         return equipment;
     }
 }

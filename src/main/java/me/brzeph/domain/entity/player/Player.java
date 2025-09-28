@@ -14,7 +14,7 @@ public class Player extends CharacterEntity {
     public Player(EntityType type, Vector3f position, Quaternion rotation, String name,
                   CharacterStats stats) {
         super(type, position, rotation, name, stats);
-        this.inventory = new PlayerInventory();
+        this.inventory = new PlayerInventory(this);
     }
 
     public PlayerInventory getInventory() { return inventory; }

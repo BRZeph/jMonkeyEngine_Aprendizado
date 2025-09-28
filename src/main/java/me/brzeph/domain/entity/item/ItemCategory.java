@@ -11,7 +11,7 @@ public enum ItemCategory {
     HANDS(MAIN_HAND, OFF_HAND),
     TRINKET(TRINKET1, TRINKET2, TRINKET3, TRINKET4),
     CURRENCY(EquipSlot.CURRENCY),
-    CRAFTING_MATERIAL(EquipSlot.CRAFTING_BAG),
+    CRAFTING_MATERIAL(CRAFTING_BAG),
     POTION(POTION1, POTION2, POTION3);
 
     private final List<EquipSlot> slots;
@@ -83,5 +83,9 @@ public enum ItemCategory {
             if (pickupRadius <= 0) throw new IllegalArgumentException("pickupRadius > 0");
             if (lifetimeSeconds < 0) throw new IllegalArgumentException("lifetimeSeconds >= 0");
         }
+    }
+
+    public record EquipSpec(String glbPath){
+
     }
 }

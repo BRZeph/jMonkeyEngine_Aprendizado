@@ -9,7 +9,7 @@ import me.brzeph.app.systems.impl.animationSystem.AnimationSystem;
 import me.brzeph.app.systems.impl.animationSystem.AnimationType;
 import me.brzeph.domain.entity.CharacterStats;
 import me.brzeph.domain.entity.EntityType;
-import me.brzeph.domain.entity.item.ItemInstance;
+import me.brzeph.domain.entity.item.ItemStack;
 import me.brzeph.domain.entity.player.Player;
 import me.brzeph.app.service.PlayerService;
 import me.brzeph.events.entities.player.PlayerJumpEvent;
@@ -70,7 +70,7 @@ public class PlayerSystem extends SystemAbs {
                 movingLeft, movingRight
         );
 
-        getEntityPhysicsAdapter().moveCharacter(player, walkDir); // sempre; será ZERO se sem input
+        getEntityPhysicsAdapter().moveCharacter(player, walkDir);
     }
 
     public void onWalkAction(PlayerWalkEvent event) {
@@ -119,11 +119,14 @@ public class PlayerSystem extends SystemAbs {
     }
 
     public void onTriggerRunAction(PlayerRunEvent playerRunEvent) {
+        if (!playerRunEvent.isPressed()) return;
+        player.getStats().setRunning(!player.getStats().isRunning());
         if(player.getStats().isRunning()){
             player.getStats().setSpeed(PLAYER_WALK_SPEED);
         } else {
             player.getStats().setSpeed(PLAYER_RUN_SPEED);
         }
+        System.out.println("player speed: " + player.getStats().getSpeed());
     }
 
     public void spawnPlayer() {
@@ -140,11 +143,12 @@ public class PlayerSystem extends SystemAbs {
     }
 
     public void giveStarterItems() {
-        inventorySystem.addItem(player, new ItemInstance(COIN_DEF, 20), false);
-        inventorySystem.addItem(player, new ItemInstance(MOCK_ITEM_DEF_HELMET, 1), false);
-        inventorySystem.addItem(player, new ItemInstance(MOCK_ITEM_DEF_HELMET, 1), false);
-        inventorySystem.addItem(player, new ItemInstance(MOCK_ITEM_DEF_CHESTPLATE, 1), false);
-        inventorySystem.addItem(player, new ItemInstance(MOCK_ITEM_DEF_CHESTPLATE, 1), false);
+        inventorySystem.addItem(player, new ItemStack(COIN_DEF, 20), false);
+        inventorySystem.addItem(player, new ItemStack(SWORD_DEF, 1), false);
+        inventorySystem.addItem(player, new ItemStack(MOCK_ITEM_DEF_HELMET, 1), false);
+        inventorySystem.addItem(player, new ItemStack(MOCK_ITEM_DEF_HELMET, 1), false);
+        inventorySystem.addItem(player, new ItemStack(MOCK_ITEM_DEF_CHESTPLATE, 1), false);
+        inventorySystem.addItem(player, new ItemStack(MOCK_ITEM_DEF_CHESTPLATE, 1), false);
 //        for (int i = 0; i < 35; i++){
 //            inventorySystem.addItem(player, new ItemInstance(MOCK_ITEM_DEF, 1), false);
 //        }

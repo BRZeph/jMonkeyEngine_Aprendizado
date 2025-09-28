@@ -1,0 +1,77 @@
+
+This file does not concern specifically to Animation, Service, Spec, Stats or Type.
+
+AnimationLayer -> Enum that says the "impact" of the animation in the model.
+    -> BASE: Full body animation, the model is ALWAYS with one of these active.
+    -> UPPER: Upper body animation, can happen concurrently with BASE.
+    -> ADDITIVE: Micro effects that go on op of the others.
+    -> Example: the player is always idle, walking, running or dying, ALWAYS, this is the base animation. The player MIGHT
+    attack WHILE having base as walking or in any other animation, meaning that the model can attack while walking.
+    Additionally, the model might have heavy breathing or respiration, these animations come here.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+public combo(WeaponClass class, List<ComboStep> steps) // class = SWORD || SPEAR || AXE || OFF_HAND.
+public comboStep(Predicate<SystemAbs> conditionToEnterThis, List<ComboStep> nextSteps, ComboStepStats stats)
+
+Combo combo = new Combo(UPPER, SWORD, List.of( "combo = basic attack with sword.
+    new ComboStep(condition1, List.of(
+        new ComboStep(condition1.1, null, new ComboStepStats(...)), "second hit after basic attack.
+        new ComboStep(condition1.2, null, new ComboStepStats(...))  "rolling while performing second step leads to sideways hit.
+    ),
+    new ComboStep(condition2, List.of(
+        new ComboStep(condition2.1, null, new ComboStepStats(...)),
+        new ComboStep(condition2.2, null, new ComboStepStats(...))
+    )
+);
+
+ComboSystem:
+currentCombo.update()
+if(!shouldChangeCombo) return;
+ComboStep nextOverride = currentCombo.getNext().stream()
+                                               .filter(p -> p.getPredicate(this)) // this = <? extends SystemAbs>.
+                                               .collect(Collector.toList()).findFirst().orElse(null);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

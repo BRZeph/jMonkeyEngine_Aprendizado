@@ -1,7 +1,7 @@
 package me.brzeph.domain.gui.impl.screens;
 
 import me.brzeph.domain.entity.item.ItemCategory;
-import me.brzeph.domain.entity.item.ItemInstance;
+import me.brzeph.domain.entity.item.ItemStack;
 import me.brzeph.domain.gui.core.layout.ColumnLayout;
 import me.brzeph.domain.gui.core.layout.LayoutParams;
 import me.brzeph.domain.gui.core.layout.RowLayout;
@@ -20,20 +20,20 @@ import static me.brzeph.domain.gui.impl.inventory.PlayerInventory.ROWS;
 public final class InventoryAdapter {
     private InventoryAdapter(){}
 
-    public static ItemInstance toItemInstance(ItemInstance ii){
+    public static ItemStack toItemInstance(ItemStack ii){
         if (ii == null) return null;
-        return new ItemInstance(ii.definition(), ii.quantity());
+        return new ItemStack(ii.definition(), ii.quantity());
     }
 
     // ---------- UI slots ----------
-    public static UIInventorySlot makeTypedSlot(String invKey, ItemCategory.EquipSlot accepts, ItemInstance ii){
+    public static UIInventorySlot makeTypedSlot(String invKey, ItemCategory.EquipSlot accepts, ItemStack ii){
         return new UIInventorySlot()
                 .accepts(accepts)
                 .setItem(toItemInstance(ii))
                 .id(invKey + ".slot." + accepts.name());
     }
 
-    public static UIInventorySlot makeCommonSlot(String invKey, int index, ItemInstance ii){
+    public static UIInventorySlot makeCommonSlot(String invKey, int index, ItemStack ii){
         return new UIInventorySlot()
                 .accepts(ItemCategory.EquipSlot.COMMON_SLOT)
                 .index(index)

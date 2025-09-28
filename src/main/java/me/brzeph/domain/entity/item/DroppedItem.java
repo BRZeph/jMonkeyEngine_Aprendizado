@@ -9,7 +9,7 @@ import java.time.Instant;
 
 public class DroppedItem extends GameEntity {
 
-    private final ItemInstance item; // payload do domínio
+    private final ItemStack item; // payload do domínio
     private final float pickupRadius;
     private final Instant despawnAt; // null => não expira
     private final String droppedByCharacterId; // opcional
@@ -17,7 +17,7 @@ public class DroppedItem extends GameEntity {
     public DroppedItem(EntityType type,
                        Vector3f position,
                        Quaternion rotation,
-                       ItemInstance item,
+                       ItemStack item,
                        float pickupRadius,
                        Instant despawnAt,
                        String droppedByCharacterId) { // TODO: Start using this parameter.
@@ -36,7 +36,7 @@ public class DroppedItem extends GameEntity {
         item.setQuantity(item.quantity() + amount);
     }
 
-    public ItemInstance getItemInstance() { return item; }
+    public ItemStack getItemInstance() { return item; }
     public Instant getDeSpawnAt() { return despawnAt; }
     public String getDroppedByCharacterId() { return droppedByCharacterId; }
 }
